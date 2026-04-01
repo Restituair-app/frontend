@@ -1,0 +1,95 @@
+{
+  "name": "NotaFiscal",
+  "type": "object",
+  "properties": {
+    "estabelecimento": {
+      "type": "string",
+      "description": "Nome do estabelecimento"
+    },
+    "cnpj": {
+      "type": "string",
+      "description": "CNPJ do estabelecimento"
+    },
+    "valor_total": {
+      "type": "number",
+      "description": "Valor total da nota fiscal"
+    },
+    "data_emissao": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de emiss\u00e3o da nota"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "saude",
+        "dentista",
+        "educacao",
+        "previdencia_privada",
+        "pensao_alimenticia",
+        "dependentes",
+        "alimentacao",
+        "transporte",
+        "moradia",
+        "servicos",
+        "vestuario",
+        "pets",
+        "farmacia",
+        "outros"
+      ],
+      "description": "Categoria da despesa"
+    },
+    "imagem_url": {
+      "type": "string",
+      "description": "URL da imagem da nota fiscal"
+    },
+    "numero_nota": {
+      "type": "string",
+      "description": "N\u00famero da nota fiscal"
+    },
+    "itens": {
+      "type": "array",
+      "description": "Itens da nota fiscal",
+      "items": {
+        "type": "object",
+        "properties": {
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valor_unitario": {
+            "type": "number"
+          },
+          "valor_total": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "observacoes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es adicionais"
+    }
+  },
+  "required": [
+    "valor_total",
+    "data_emissao",
+    "categoria"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "created_by": "{{user.email}}"
+    },
+    "delete": {
+      "created_by": "{{user.email}}"
+    }
+  }
+}
