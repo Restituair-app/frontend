@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import appLogo from '../../assets/logo.png';
+import { LogIn, UserPlus } from 'lucide-react';
 
 const getDefaultRedirect = () => '/dashboard';
 
@@ -91,10 +93,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0">
-        <CardHeader>
-          <CardTitle>{mode === 'login' ? 'Entrar' : 'Criar Conta'}</CardTitle>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border border-slate-200/70 dark:border-slate-700/60 bg-white/95 dark:bg-slate-900/95">
+        <CardHeader className="space-y-4">
+          <div className="flex items-center justify-center">
+            <img src={appLogo} alt="Restitua" className="h-16 w-auto object-contain" />
+          </div>
+          <div className="space-y-1 text-center">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Restitua</p>
+            <CardTitle>{mode === 'login' ? 'Entrar na sua conta' : 'Criar sua conta'}</CardTitle>
+          </div>
           <CardDescription>
             {mode === 'login'
               ? 'Acesse sua conta para continuar.'
@@ -164,14 +172,30 @@ export default function LoginPage() {
               </p>
             )}
 
-            <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700">
-              {loading ? 'Aguarde...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-br from-slate-900 to-blue-900 text-white rounded-lg hover:from-slate-800 hover:to-blue-800 transition-all font-semibold shadow-lg disabled:opacity-70"
+            >
+              {loading ? (
+                'Aguarde...'
+              ) : mode === 'login' ? (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  Entrar
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  Criar conta
+                </>
+              )}
             </Button>
 
             <Button
               type="button"
-              variant="ghost"
-              className="w-full"
+              variant="outline"
+              className="w-full border-slate-300 dark:border-slate-700"
               onClick={() => setMode((prev) => (prev === 'login' ? 'register' : 'login'))}
             >
               {mode === 'login' ? 'Não tem conta? Criar conta' : 'Já tem conta? Entrar'}
