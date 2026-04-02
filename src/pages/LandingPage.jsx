@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -258,6 +259,19 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
+      <section className="py-5 px-6 bg-slate-900 border-t border-slate-800">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 text-sm">
+          <span className="text-slate-300">Informações legais para uso do app:</span>
+          <Link to="/terms" className="text-blue-300 hover:text-blue-200 font-medium transition-colors">
+            Termos de Uso
+          </Link>
+          <span className="hidden sm:inline text-slate-500">|</span>
+          <Link to="/privacy" className="text-blue-300 hover:text-blue-200 font-medium transition-colors">
+            Política de Privacidade
+          </Link>
+        </div>
+      </section>
+
       <footer className="py-8 px-6 bg-slate-950 text-slate-500 text-center text-sm">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Receipt className="w-4 h-4 text-blue-400" />

@@ -12,6 +12,8 @@ import { lazy } from 'react';
 const CompletarCadastro = lazy(() => import('./pages/CompletarCadastro'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/Login'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 
@@ -32,7 +34,12 @@ const AuthenticatedApp = () => {
   const isLoadingSession = isLoadingPublicSettings || isLoadingAuth;
   const currentPath = window.location.pathname;
   const isRootPath = currentPath === '/';
-  const isPublicPage = currentPath === '/' || currentPath === '/LandingPage' || currentPath === '/Login';
+  const isPublicPage =
+    currentPath === '/' ||
+    currentPath === '/LandingPage' ||
+    currentPath === '/Login' ||
+    currentPath === '/terms' ||
+    currentPath === '/privacy';
 
   if (isRootPath && isLoadingSession) {
     return <PageFallback />;
@@ -46,6 +53,8 @@ const AuthenticatedApp = () => {
           <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/LandingPage'} replace />} />
           <Route path="/LandingPage" element={<LandingPage />} />
           <Route path="/Login" element={<LoginPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<Navigate to="/LandingPage" replace />} />
         </Routes>
       </Suspense>
@@ -78,6 +87,12 @@ const AuthenticatedApp = () => {
       } />
       <Route path="/LandingPage" element={
         <Suspense fallback={<PageFallback />}><LandingPage /></Suspense>
+      } />
+      <Route path="/terms" element={
+        <Suspense fallback={<PageFallback />}><TermsPage /></Suspense>
+      } />
+      <Route path="/privacy" element={
+        <Suspense fallback={<PageFallback />}><PrivacyPage /></Suspense>
       } />
       <Route path="/CompletarCadastro" element={
         <Suspense fallback={<PageFallback />}><CompletarCadastro /></Suspense>
