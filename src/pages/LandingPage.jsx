@@ -50,7 +50,7 @@ const steps = [
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const handleLogin = () => {
-    base44.auth.redirectToLogin('/Dashboard');
+    base44.auth.redirectToLogin('/dashboard');
   };
 
   return (

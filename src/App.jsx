@@ -8,11 +8,10 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import { lazy, useEffect, useState, useRef } from 'react';
+import { lazy } from 'react';
 const CompletarCadastro = lazy(() => import('./pages/CompletarCadastro'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/Login'));
-import { base44 } from '@/api/base44Client';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 
@@ -29,28 +28,22 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const [checkingCadastro, setCheckingCadastro] = useState(false);
-  const [cadastroCompleto, setCadastroCompleto] = useState(true);
-  const cadastroChecked = useRef(false);
+  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
+  const isLoadingSession = isLoadingPublicSettings || isLoadingAuth;
   const currentPath = window.location.pathname;
-  const isPublicPage = currentPath === '/LandingPage' || currentPath === '/Login';
+  const isRootPath = currentPath === '/';
+  const isPublicPage = currentPath === '/' || currentPath === '/LandingPage' || currentPath === '/Login';
 
-  useEffect(() => {
-    if (isLoadingAuth || authError || isPublicPage || cadastroChecked.current) return;
-    cadastroChecked.current = true;
-    setCheckingCadastro(true);
-    base44.auth.me()
-      .then((me) => setCadastroCompleto(!!me.cadastro_completo))
-      .catch(() => setCadastroCompleto(true))
-      .finally(() => setCheckingCadastro(false));
-  }, [isLoadingAuth, authError, isPublicPage]);
+  if (isRootPath && isLoadingSession) {
+    return <PageFallback />;
+  }
 
   // Páginas públicas sempre acessíveis sem esperar auth.
   if (isPublicPage) {
     return (
       <Suspense fallback={<PageFallback />}>
         <Routes>
+          <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/LandingPage'} replace />} />
           <Route path="/LandingPage" element={<LandingPage />} />
           <Route path="/Login" element={<LoginPage />} />
           <Route path="*" element={<Navigate to="/LandingPage" replace />} />
@@ -60,7 +53,7 @@ const AuthenticatedApp = () => {
   }
 
   // Aguardar verificações de auth
-  if (isLoadingPublicSettings || isLoadingAuth || checkingCadastro) {
+  if (isLoadingSession) {
     return <PageFallback />;
   }
 
@@ -74,31 +67,20 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Redirecionar para completar cadastro se necessário
-  if (!cadastroCompleto) {
-    return (
-      <Suspense fallback={<PageFallback />}>
-        <Routes>
-          <Route path="/CompletarCadastro" element={<CompletarCadastro />} />
-          <Route path="*" element={<Navigate to="/CompletarCadastro" replace />} />
-        </Routes>
-      </Suspense>
-    );
-  }
-
   // App autenticado
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/dashboard" element={
+        <LayoutWrapper currentPageName={mainPageKey}>
+          <MainPage />
+        </LayoutWrapper>
+      } />
       <Route path="/LandingPage" element={
         <Suspense fallback={<PageFallback />}><LandingPage /></Suspense>
       } />
       <Route path="/CompletarCadastro" element={
         <Suspense fallback={<PageFallback />}><CompletarCadastro /></Suspense>
-      } />
-      <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
       } />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route

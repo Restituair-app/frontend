@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const getDefaultRedirect = () => '/Dashboard';
+const getDefaultRedirect = () => '/dashboard';
 
 const parseRedirectUrl = () => {
   const url = new URL(window.location.href);
@@ -74,6 +74,12 @@ export default function LoginPage() {
           email: form.email,
           password: form.password,
         });
+      }
+
+      const me = await base44.auth.me();
+      if (!me?.cadastro_completo) {
+        window.location.href = '/CompletarCadastro';
+        return;
       }
 
       redirectAfterAuth();
