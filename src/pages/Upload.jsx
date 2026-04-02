@@ -110,7 +110,7 @@ export default function UploadPage() {
 
     try {
       // Upload da imagem
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: arquivo });
+      const { file_url, key } = await base44.integrations.Core.UploadFile({ file: arquivo });
 
       // Simular extração de dados com IA
       const prompt = `Analise esta nota fiscal e extraia os seguintes dados em formato JSON:
@@ -125,6 +125,7 @@ export default function UploadPage() {
       const resultado = await base44.integrations.Core.InvokeLLM({
         prompt: prompt,
         file_urls: [file_url],
+        file_keys: key ? [key] : undefined,
         response_json_schema: {
           type: 'object',
           properties: {
