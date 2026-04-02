@@ -6,7 +6,7 @@ import useSystemTheme from '@/hooks/useSystemTheme';
 // Detector de tela branca: se o conteúdo principal ficar vazio por mais de 3s, recarrega
 function useWhiteScreenGuard(pathname) {
   useEffect(() => {
-    const isHome = pathname === '/' || pathname === '/Dashboard';
+    const isHome = pathname === '/' || pathname === '/dashboard' || pathname === '/Dashboard';
     if (!isHome) return;
     const timer = setTimeout(() => {
       const main = document.querySelector('main');
@@ -19,7 +19,7 @@ function useWhiteScreenGuard(pathname) {
 }
 
 const navItems = [
-  { label: 'Início', icon: LayoutDashboard, path: '/' },
+  { label: 'Início', icon: LayoutDashboard, path: '/dashboard' },
   { label: 'Nova Nota', icon: Upload, path: '/Upload' },
   { label: 'Relatórios', icon: FileText, path: '/Relatorios' },
   { label: 'Conta', icon: Settings, path: '/Configuracoes' },
@@ -41,9 +41,11 @@ export default function AppLayout({ children, currentPageName }) {
     }
   }, [location.pathname]);
 
-  const mainTabPaths = ['/', '/Dashboard', '/Upload', '/Relatorios', '/Configuracoes'];
+  const mainTabPaths = ['/dashboard', '/Dashboard', '/Upload', '/Relatorios', '/Configuracoes'];
   const isMainTab = mainTabPaths.some((p) =>
-    p === '/' ? location.pathname === '/' || location.pathname === '/Dashboard' : location.pathname === p
+    p.toLowerCase() === '/dashboard'
+      ? ['/dashboard', '/Dashboard'].includes(location.pathname)
+      : location.pathname === p
   );
   const showBack = !isPublic && !isMainTab;
 
@@ -52,7 +54,7 @@ export default function AppLayout({ children, currentPageName }) {
     if (window.history.length > 2) {
       navigate(-1);
     } else {
-      navigate('/');
+      navigate('/dashboard');
     }
   };
 
@@ -89,14 +91,14 @@ export default function AppLayout({ children, currentPageName }) {
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           {navItems.map(({ label, icon: Icon, path }) => {
-            const active = path === '/'
-              ? location.pathname === '/' || location.pathname === '/Dashboard'
+            const active = path.toLowerCase() === '/dashboard'
+              ? ['/dashboard', '/Dashboard'].includes(location.pathname)
               : location.pathname.startsWith(path);
 
             const handleNavClick = () => {
-              if (path === '/') {
+              if (path.toLowerCase() === '/dashboard') {
                 // Força reload completo ao ir para início — evita tela branca no Android
-                window.location.href = '/';
+                window.location.href = '/dashboard';
               } else {
                 navigate(path);
               }

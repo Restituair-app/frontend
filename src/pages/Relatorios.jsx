@@ -334,7 +334,7 @@ export default function Relatorios() {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <Button
                 variant="ghost"
-                onClick={() => { window.location.href = '/'; }}
+                onClick={() => { window.location.href = '/dashboard'; }}
                 aria-label="Voltar ao dashboard"
                 className="gap-2 min-h-[44px] w-full md:w-auto justify-start"
               >

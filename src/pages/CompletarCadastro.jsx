@@ -64,7 +64,7 @@ export default function CompletarCadastro() {
       celular: form.celular,
       cadastro_completo: true
     });
-    window.location.href = '/Dashboard';
+    window.location.href = '/dashboard';
   };
 
   return (

@@ -218,7 +218,7 @@ export default function UploadPage() {
       <div className="max-w-4xl mx-auto">
         <Button
           variant="ghost"
-          onClick={() => { window.location.href = '/'; }}
+          onClick={() => { window.location.href = '/dashboard'; }}
           className="mb-6 gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
