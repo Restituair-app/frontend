@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/v1/(.*)",
-      "destination": "http://restitua-env.eba-gext7fxw.us-east-1.elasticbeanstalk.com/api/v1/$1"
+      "destination": "https://api.restitua.com/api/v1/$1"
     },
     {
       "source": "/(.*)",

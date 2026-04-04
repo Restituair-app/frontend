@@ -11,7 +11,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_PROXY_TARGET || 'http://restitua-env.eba-gext7fxw.us-east-1.elasticbeanstalk.com',
+        target: process.env.VITE_API_PROXY_TARGET || 'https://api.restitua.com',
         changeOrigin: true,
         secure: false,
       },
