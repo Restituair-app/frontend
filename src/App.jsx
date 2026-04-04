@@ -14,6 +14,7 @@ const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/Login'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 
@@ -39,7 +40,8 @@ const AuthenticatedApp = () => {
     currentPath === '/LandingPage' ||
     currentPath === '/Login' ||
     currentPath === '/terms' ||
-    currentPath === '/privacy';
+    currentPath === '/privacy' ||
+    currentPath === '/support';
 
   if (isRootPath && isLoadingSession) {
     return <PageFallback />;
@@ -55,6 +57,7 @@ const AuthenticatedApp = () => {
           <Route path="/Login" element={<LoginPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/support" element={<SupportPage />} />
           <Route path="*" element={<Navigate to="/LandingPage" replace />} />
         </Routes>
       </Suspense>
@@ -93,6 +96,9 @@ const AuthenticatedApp = () => {
       } />
       <Route path="/privacy" element={
         <Suspense fallback={<PageFallback />}><PrivacyPage /></Suspense>
+      } />
+      <Route path="/support" element={
+        <Suspense fallback={<PageFallback />}><SupportPage /></Suspense>
       } />
       <Route path="/CompletarCadastro" element={
         <Suspense fallback={<PageFallback />}><CompletarCadastro /></Suspense>

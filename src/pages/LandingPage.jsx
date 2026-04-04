@@ -269,6 +269,10 @@ export default function LandingPage() {
           <Link to="/privacy" className="text-blue-300 hover:text-blue-200 font-medium transition-colors">
             Política de Privacidade
           </Link>
+          <span className="hidden sm:inline text-slate-500">|</span>
+          <Link to="/support" className="text-blue-300 hover:text-blue-200 font-medium transition-colors">
+            Suporte
+          </Link>
         </div>
       </section>
 
