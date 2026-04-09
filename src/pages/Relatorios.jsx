@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lucide-react';
 // jsPDF and JSZip are loaded on-demand to keep the initial bundle small
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import appLogo from '../../assets/logo.png';
 
 const categorias = {
@@ -300,9 +301,19 @@ export default function Relatorios() {
 
     await Promise.all(
       notasComImagem.map(async (nota, idx) => {
-        const resp = await fetch(nota.imagem_url);
+        const sourceUrl = (await resignS3UrlOnClient(nota.imagem_url)) || nota.imagem_url;
+        let resp = await fetch(sourceUrl);
+        if (!resp.ok) {
+          const refreshedUrl = await resignS3UrlOnClient(sourceUrl, true);
+          if (refreshedUrl) {
+            resp = await fetch(refreshedUrl);
+          }
+        }
+        if (!resp.ok) {
+          return;
+        }
         const blob = await resp.blob();
-        const ext = nota.imagem_url.split('.').pop().split('?')[0] || 'jpg';
+        const ext = sourceUrl.split('.').pop().split('?')[0] || 'jpg';
         const nomeArq = `${String(idx + 1).padStart(3, '0')}_${(nota.estabelecimento || 'nota').replace(/[^a-zA-Z0-9]/g, '_')}_${nota.data_emissao}.${ext}`;
         pasta.file(nomeArq, blob);
       })

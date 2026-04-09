@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import EditNotaModal from './EditNotaModal';
+import ResignedImage from '@/components/common/ResignedImage';
 
 // Month header component
 const MesHeader = memo(function MesHeader({ chave, notasDoMes, oculto, toggleMes }) {
@@ -189,7 +190,11 @@ export default function NotasList({ notas, categorias }) {
               {notaSelecionada.imagem_url && (
                 <div>
                   <h4 className="font-semibold text-foreground mb-2">Imagem da Nota</h4>
-                  <img src={notaSelecionada.imagem_url} alt="Nota fiscal" className="w-full rounded-lg shadow-md" />
+                  <ResignedImage
+                    src={notaSelecionada.imagem_url}
+                    alt="Nota fiscal"
+                    className="w-full rounded-lg shadow-md"
+                  />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">

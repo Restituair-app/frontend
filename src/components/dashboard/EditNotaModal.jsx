@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Save, Trash2 } from 'lucide-react';
+import ResignedImage from '@/components/common/ResignedImage';
 
 const categorias = {
   saude: { nome: 'Médico/Saúde', icon: '🏥' },
@@ -96,7 +97,11 @@ export default function EditNotaModal({ nota, onClose }) {
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {nota.imagem_url && (
-            <img src={nota.imagem_url} alt="Nota fiscal" className="w-full max-h-48 object-contain rounded-lg shadow-md" />
+            <ResignedImage
+              src={nota.imagem_url}
+              alt="Nota fiscal"
+              className="w-full max-h-48 object-contain rounded-lg shadow-md"
+            />
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
