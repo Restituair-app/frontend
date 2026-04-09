@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src={appLogo} alt="Restitua logo" className="h-10 w-auto object-contain rounded-md bg-black px-2 py-1" />
+            <img src={appLogo} alt="Restitua logo" className="h-10 w-auto object-contain" />
             <div>
               <p className="text-xs text-slate-500">Restitua</p>
               <h1 className="text-lg font-semibold">Política de Privacidade</h1>

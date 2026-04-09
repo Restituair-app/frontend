@@ -112,7 +112,7 @@ export default function Dashboard() {
           <img
             src={appLogo}
             alt="Restitua logo"
-            className="h-12 md:h-14 w-auto object-contain rounded-md bg-black px-2 py-1.5"
+            className="h-12 md:h-14 w-auto object-contain"
           />
 
           <div className="flex items-center gap-2">

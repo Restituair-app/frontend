@@ -60,7 +60,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={appLogo} alt="Restitua logo" className="h-14 w-auto object-contain rounded-md bg-black px-3 py-2" />
+            <img src={appLogo} alt="Restitua logo" className="h-14 w-auto object-contain" />
           </div>
           {/* Links centralizados - desktop */}
           <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">

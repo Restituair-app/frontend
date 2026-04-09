@@ -97,7 +97,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-xl border border-slate-200/70 dark:border-slate-700/60 bg-white/95 dark:bg-slate-900/95">
         <CardHeader className="space-y-4">
           <div className="flex items-center justify-center">
-            <img src={appLogo} alt="Restitua logo" className="h-16 w-auto object-contain rounded-lg bg-black px-3 py-2" />
+            <img src={appLogo} alt="Restitua logo" className="h-16 w-auto object-contain" />
           </div>
           <div className="space-y-1 text-center">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Restitua</p>
