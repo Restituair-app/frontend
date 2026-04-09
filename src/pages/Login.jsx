@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import appLogo from '../../assets/logo.png';
+import { appLogo } from '@/brandAssets';
 import { LogIn, UserPlus } from 'lucide-react';
 
 const getDefaultRedirect = () => '/dashboard';
@@ -97,7 +97,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-xl border border-slate-200/70 dark:border-slate-700/60 bg-white/95 dark:bg-slate-900/95">
         <CardHeader className="space-y-4">
           <div className="flex items-center justify-center">
-            <img src={appLogo} alt="Restitua" className="h-16 w-auto object-contain" />
+            <img src={appLogo} alt="Restitua logo" className="h-16 w-auto object-contain rounded-lg bg-black px-3 py-2" />
           </div>
           <div className="space-y-1 text-center">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Restitua</p>

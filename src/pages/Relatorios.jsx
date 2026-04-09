@@ -8,7 +8,7 @@ import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lu
 // jsPDF and JSZip are loaded on-demand to keep the initial bundle small
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
-import appLogo from '../../assets/logo.png';
+import { appLogo } from '@/brandAssets';
 
 const categorias = {
   saude: { nome: 'Médico/Saúde', cor: '#ef4444' },

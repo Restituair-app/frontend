@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import appLogo from '../../assets/logo.png';
+import { appLogo } from '@/brandAssets';
 import {
   Receipt, Shield, Zap, CheckCircle,
   ArrowRight, BarChart2, Upload, LogIn, Heart, Smile, GraduationCap, Landmark, Scale, Users } from
@@ -60,7 +60,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={appLogo} alt="Restitua" className="h-14 w-auto mix-blend-multiply" />
+            <img src={appLogo} alt="Restitua logo" className="h-14 w-auto object-contain rounded-md bg-black px-3 py-2" />
           </div>
           {/* Links centralizados - desktop */}
           <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
@@ -134,7 +134,7 @@ export default function LandingPage() {
                 Como funciona
               </Button>
             </div>
-            <p className="text-sm text-slate-400 mt-4">Sem cartão de crédito. Sem burocracia.</p>
+            {/* <p className="text-sm text-slate-400 mt-4">Sem cartão de crédito. Sem burocracia.</p> */}
           </div>
         </div>
       </section>

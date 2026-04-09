@@ -34,7 +34,7 @@ import usePullToRefresh from '../hooks/usePullToRefresh';
 import CategoryCard from '../components/dashboard/CategoryCard';
 import NotasList from '../components/dashboard/NotasList';
 import { Skeleton } from '@/components/ui/skeleton';
-import appLogo from '../../assets/logo.png';
+import { appLogo } from '@/brandAssets';
 
 const categorias = {
   saude: { nome: 'Médico/Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
@@ -111,8 +111,8 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
           <img
             src={appLogo}
-            alt="Restitua"
-            className="h-12 md:h-14 w-auto object-contain"
+            alt="Restitua logo"
+            className="h-12 md:h-14 w-auto object-contain rounded-md bg-black px-2 py-1.5"
           />
 
           <div className="flex items-center gap-2">
