@@ -6,6 +6,8 @@ const awsBucket = (import.meta.env.VITE_AWS_S3_BUCKET || '').trim();
 const awsAccessKeyId = (import.meta.env.VITE_AWS_ACCESS_KEY_ID || '').trim();
 const awsSecretAccessKey = (import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || '').trim();
 const signedUrlTtlSeconds = Number(import.meta.env.VITE_AWS_S3_SIGNED_URL_TTL || 900);
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/$/, '');
+const ACCESS_TOKEN_KEY = 'base44_access_token';
 
 const hasAwsClientConfig = Boolean(
   awsRegion && awsBucket && awsAccessKeyId && awsSecretAccessKey,
@@ -28,6 +30,72 @@ const normalizeKey = (value) => {
     return null;
   }
   return String(value).trim().replace(/^\/+/, '');
+};
+
+const resolveApiBaseUrl = () => {
+  if (apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')) {
+    return apiBaseUrl;
+  }
+
+  const normalizedPath = apiBaseUrl.startsWith('/') ? apiBaseUrl : `/${apiBaseUrl}`;
+  return `${window.location.origin}${normalizedPath}`;
+};
+
+const saveSignedUrlCache = (key, url, expiresInSeconds) => {
+  const safeExpiresIn = Number.isFinite(expiresInSeconds) && expiresInSeconds > 0
+    ? expiresInSeconds
+    : 900;
+
+  signedUrlCache.set(key, {
+    url,
+    expiresAt: Date.now() + safeExpiresIn * 1000,
+  });
+};
+
+const getCachedSignedUrl = (key, forceRefresh) => {
+  if (forceRefresh) {
+    return null;
+  }
+
+  const now = Date.now();
+  const cached = signedUrlCache.get(key);
+  if (cached && cached.expiresAt > now + 30_000) {
+    return cached.url;
+  }
+
+  return null;
+};
+
+const safeParse = async (response) => {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+  return response.text();
+};
+
+const getSignedUrlFromBackend = async (key) => {
+  try {
+    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const response = await fetch(
+      `${resolveApiBaseUrl()}/upload/signed-url?key=${encodeURIComponent(key)}`,
+      {
+        method: 'GET',
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      },
+    );
+
+    const data = await safeParse(response);
+
+    if (!response.ok || !data?.url) {
+      return null;
+    }
+
+    saveSignedUrlCache(key, data.url, data.expiresInSeconds ?? signedUrlTtlSeconds);
+    return data.url;
+  } catch {
+    return null;
+  }
 };
 
 export const extractS3KeyFromUrl = (rawUrl) => {
@@ -87,38 +155,37 @@ export const extractS3KeyFromUrl = (rawUrl) => {
 };
 
 export const resignS3UrlOnClient = async (originalUrl, forceRefresh = false) => {
-  if (!s3Client) {
-    return null;
-  }
-
   const key = extractS3KeyFromUrl(originalUrl);
   if (!key) {
     return null;
   }
 
-  const now = Date.now();
-  const cached = signedUrlCache.get(key);
-  if (!forceRefresh && cached && cached.expiresAt > now + 30_000) {
-    return cached.url;
+  const cached = getCachedSignedUrl(key, forceRefresh);
+  if (cached) {
+    return cached;
+  }
+
+  if (!s3Client) {
+    return getSignedUrlFromBackend(key);
   }
 
   const expiresIn = Number.isFinite(signedUrlTtlSeconds) && signedUrlTtlSeconds > 0
     ? signedUrlTtlSeconds
     : 900;
 
-  const url = await getSignedUrl(
-    s3Client,
-    new GetObjectCommand({
-      Bucket: awsBucket,
-      Key: key,
-    }),
-    { expiresIn },
-  );
+  try {
+    const url = await getSignedUrl(
+      s3Client,
+      new GetObjectCommand({
+        Bucket: awsBucket,
+        Key: key,
+      }),
+      { expiresIn },
+    );
 
-  signedUrlCache.set(key, {
-    url,
-    expiresAt: now + expiresIn * 1000,
-  });
-
-  return url;
+    saveSignedUrlCache(key, url, expiresIn);
+    return url;
+  } catch {
+    return getSignedUrlFromBackend(key);
+  }
 };
