@@ -12,6 +12,8 @@ import { lazy } from 'react';
 const CompletarCadastro = lazy(() => import('./pages/CompletarCadastro'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/Login'));
+const RecoveryPage = lazy(() => import('./pages/Recovery'));
+const ChangePasswordPage = lazy(() => import('./pages/ChangePassword'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
@@ -39,6 +41,8 @@ const AuthenticatedApp = () => {
     currentPath === '/' ||
     currentPath === '/LandingPage' ||
     currentPath === '/Login' ||
+    currentPath === '/recovery' ||
+    currentPath.startsWith('/change-password/') ||
     currentPath === '/terms' ||
     currentPath === '/privacy' ||
     currentPath === '/support';
@@ -55,6 +59,8 @@ const AuthenticatedApp = () => {
           <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/LandingPage'} replace />} />
           <Route path="/LandingPage" element={<LandingPage />} />
           <Route path="/Login" element={<LoginPage />} />
+          <Route path="/recovery" element={<RecoveryPage />} />
+          <Route path="/change-password/:token" element={<ChangePasswordPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/support" element={<SupportPage />} />
@@ -90,6 +96,12 @@ const AuthenticatedApp = () => {
       } />
       <Route path="/LandingPage" element={
         <Suspense fallback={<PageFallback />}><LandingPage /></Suspense>
+      } />
+      <Route path="/recovery" element={
+        <Suspense fallback={<PageFallback />}><RecoveryPage /></Suspense>
+      } />
+      <Route path="/change-password/:token" element={
+        <Suspense fallback={<PageFallback />}><ChangePasswordPage /></Suspense>
       } />
       <Route path="/terms" element={
         <Suspense fallback={<PageFallback />}><TermsPage /></Suspense>

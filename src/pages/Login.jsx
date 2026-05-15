@@ -200,6 +200,19 @@ export default function LoginPage() {
             >
               {mode === 'login' ? 'Não tem conta? Criar conta' : 'Já tem conta? Entrar'}
             </Button>
+
+            {mode === 'login' ? (
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-blue-700 dark:text-blue-300"
+                onClick={() => {
+                  window.location.href = '/recovery';
+                }}
+              >
+                Esqueci minha senha
+              </Button>
+            ) : null}
           </form>
         </CardContent>
       </Card>

@@ -248,6 +248,22 @@ const auth = {
   async deleteMePermanent() {
     return request('/users/me/permanent', { method: 'DELETE' });
   },
+
+  async requestPasswordRecovery(email) {
+    return request('/auth/recovery/request', {
+      method: 'POST',
+      body: { email },
+      auth: false,
+    });
+  },
+
+  async resetPassword({ token, password }) {
+    return request('/auth/recovery/reset', {
+      method: 'POST',
+      body: { token, password },
+      auth: false,
+    });
+  },
 };
 
 const entities = {
