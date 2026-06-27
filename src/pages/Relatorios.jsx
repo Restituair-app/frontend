@@ -24,6 +24,8 @@ const categorias = {
   vestuario: { nome: 'Vestuário', cor: '#ec4899' },
   pets: { nome: 'Pets', cor: '#f59e0b' },
   farmacia: { nome: 'Farmácia', cor: '#84cc16' },
+  estetica_beleza: { nome: 'Estética / Beleza', cor: '#ec4899' },
+  lazer_diversao: { nome: 'Lazer / Diversão', cor: '#0ea5e9' },
   outros: { nome: 'Outros', cor: '#6b7280' }
 };
 

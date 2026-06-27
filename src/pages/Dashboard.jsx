@@ -26,15 +26,20 @@ import {
   Shirt,
   PawPrint,
   Pill,
+  Sparkles,
+  Gamepad2,
   Package,
   CheckCircle,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import usePullToRefresh from '../hooks/usePullToRefresh';
 import CategoryCard from '../components/dashboard/CategoryCard';
+import CategoryInfoModal from '../components/dashboard/CategoryInfoModal';
 import NotasList from '../components/dashboard/NotasList';
 import { Skeleton } from '@/components/ui/skeleton';
 import { appLogo } from '@/brandAssets';
+import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
+import { CATEGORY_TOOLTIPS } from '@/constants/category-tooltips';
 
 const categorias = {
   saude: { nome: 'Médico/Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
@@ -50,11 +55,15 @@ const categorias = {
   vestuario: { nome: 'Vestuário', cor: 'bg-pink-500', icon: Shirt, iconColor: 'text-pink-600 dark:text-pink-300' },
   pets: { nome: 'Pets', cor: 'bg-amber-500', icon: PawPrint, iconColor: 'text-amber-600 dark:text-amber-300' },
   farmacia: { nome: 'Farmácia', cor: 'bg-lime-500', icon: Pill, iconColor: 'text-lime-600 dark:text-lime-300' },
+  estetica_beleza: { nome: 'Estética / Beleza', cor: 'bg-pink-500', icon: Sparkles, iconColor: 'text-pink-600 dark:text-pink-300' },
+  lazer_diversao: { nome: 'Lazer / Diversão', cor: 'bg-sky-500', icon: Gamepad2, iconColor: 'text-sky-600 dark:text-sky-300' },
   outros: { nome: 'Outros', cor: 'bg-gray-500', icon: Package, iconColor: 'text-slate-600 dark:text-slate-300' },
 };
 
 export default function Dashboard() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [tooltipCategoria, setTooltipCategoria] = useState(null);
+  const [modalCategoria, setModalCategoria] = useState(null);
   const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
   const [userEmail, setUserEmail] = useState(null);
 
@@ -74,6 +83,7 @@ export default function Dashboard() {
   const { indicatorStyle, isTriggered, isActive } = usePullToRefresh(handleRefresh);
 
   const handleCategoriaClick = useCallback((key) => {
+    setTooltipCategoria(null);
     setCategoriaSelecionada((prev) => (prev === key ? null : key));
   }, []);
 
@@ -94,6 +104,7 @@ export default function Dashboard() {
   const totalGeral = Object.values(totalPorCategoria).reduce((sum, val) => sum + val, 0);
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary">
       {/* Pull-to-refresh indicator: fixed overlay, zero layout shift */}
       {isActive && (
@@ -264,7 +275,13 @@ export default function Dashboard() {
                     total={totalPorCategoria[key]}
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
                     ativo={categoriaSelecionada === key}
-                    onClick={() => handleCategoriaClick(key)} />);
+                    onClick={() => {
+                      setTooltipCategoria(null);
+                      setModalCategoria(key);
+                    }}
+                    tooltipText={CATEGORY_TOOLTIPS[key]}
+                    tooltipOpen={tooltipCategoria === key}
+                    onTooltipOpenChange={(open) => setTooltipCategoria(open ? key : null)} />);
 
 
               })}
@@ -277,7 +294,7 @@ export default function Dashboard() {
               <span className="text-xs font-semibold text-red-600 bg-red-100 px-3 py-1 rounded-full flex items-center gap-1 w-fit"><XCircle className="w-3.5 h-3.5" /> Não Restituível</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {['alimentacao', 'transporte', 'moradia', 'servicos', 'vestuario', 'pets', 'farmacia', 'outros'].map((key) => {
+              {['alimentacao', 'transporte', 'moradia', 'servicos', 'vestuario', 'pets', 'farmacia', 'estetica_beleza', 'lazer_diversao', 'outros'].map((key) => {
                 const cat = categorias[key];
                 return (
                   <CategoryCard
@@ -328,6 +345,13 @@ export default function Dashboard() {
           }
         </div>
       </div>
-    </div>);
+    </div>
+    <CategoryInfoModal
+      categoryKey={modalCategoria}
+      content={modalCategoria ? CATEGORY_INFO_CONTENT[modalCategoria] : null}
+      categoryMeta={modalCategoria ? categorias[modalCategoria] : null}
+      onClose={() => setModalCategoria(null)}
+    />
+    </>);
 
 }

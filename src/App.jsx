@@ -17,6 +17,7 @@ const ChangePasswordPage = lazy(() => import('./pages/ChangePassword'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
+const PremiumPage = lazy(() => import('./pages/PremiumPage'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 
@@ -45,7 +46,8 @@ const AuthenticatedApp = () => {
     currentPath.startsWith('/change-password/') ||
     currentPath === '/terms' ||
     currentPath === '/privacy' ||
-    currentPath === '/support';
+    currentPath === '/support' ||
+    currentPath === '/premium';
 
   if (isRootPath && isLoadingSession) {
     return <PageFallback />;
@@ -64,6 +66,7 @@ const AuthenticatedApp = () => {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/premium" element={<PremiumPage />} />
           <Route path="*" element={<Navigate to="/LandingPage" replace />} />
         </Routes>
       </Suspense>
@@ -111,6 +114,9 @@ const AuthenticatedApp = () => {
       } />
       <Route path="/support" element={
         <Suspense fallback={<PageFallback />}><SupportPage /></Suspense>
+      } />
+      <Route path="/premium" element={
+        <Suspense fallback={<PageFallback />}><PremiumPage /></Suspense>
       } />
       <Route path="/CompletarCadastro" element={
         <Suspense fallback={<PageFallback />}><CompletarCadastro /></Suspense>

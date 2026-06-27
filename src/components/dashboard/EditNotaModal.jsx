@@ -25,6 +25,8 @@ const categorias = {
   vestuario: { nome: 'Vestuário', icon: '👔' },
   pets: { nome: 'Pets', icon: '🐾' },
   farmacia: { nome: 'Farmácia', icon: '💊' },
+  estetica_beleza: { nome: 'Estética / Beleza', icon: '✨' },
+  lazer_diversao: { nome: 'Lazer / Diversão', icon: '🎮' },
   outros: { nome: 'Outros', icon: '📦' },
 };
 

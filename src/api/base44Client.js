@@ -73,10 +73,36 @@ const normalizeNotaFiscalPayload = (payload = {}) => {
   return normalized;
 };
 
+const extractErrorMessage = (data, status) => {
+  if (!data || typeof data !== 'object') {
+    return `Request failed with status ${status}`;
+  }
+
+  const rawMessage = data.message;
+
+  if (typeof rawMessage === 'string' && rawMessage.trim()) {
+    return rawMessage;
+  }
+
+  if (rawMessage && typeof rawMessage === 'object') {
+    if (typeof rawMessage.message === 'string' && rawMessage.message.trim()) {
+      return rawMessage.message;
+    }
+
+    if (Array.isArray(rawMessage.message) && rawMessage.message.length > 0) {
+      return String(rawMessage.message[0]);
+    }
+
+    if (typeof rawMessage.error === 'string' && rawMessage.error.trim()) {
+      return rawMessage.error;
+    }
+  }
+
+  return `Request failed with status ${status}`;
+};
+
 const toAuthError = (status, data) => {
-  const message =
-    (typeof data === 'object' && data && 'message' in data && String(data.message)) ||
-    `Request failed with status ${status}`;
+  const message = extractErrorMessage(data, status);
   const error = new Error(message);
   error.status = status;
   error.data = data;

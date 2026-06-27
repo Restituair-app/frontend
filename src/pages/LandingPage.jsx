@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { appLogo } from '@/brandAssets';
+import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
 import {
   Receipt, Shield, Zap, CheckCircle,
-  ArrowRight, BarChart2, Upload, LogIn, Heart, Smile, GraduationCap, Landmark, Scale, Users } from
+  ArrowRight, BarChart2, Upload, LogIn, Heart, Smile, GraduationCap, Landmark, Scale, Users,
+  Check, X, Info, ShieldCheck, Star } from
 'lucide-react';
 
 const features = [
@@ -33,12 +36,12 @@ const features = [
 
 
 const deductions = [
-{ icon: Heart, label: 'Saúde / Médico' },
-{ icon: Smile, label: 'Saúde / Dentista' },
-{ icon: GraduationCap, label: 'Educação' },
-{ icon: Landmark, label: 'Previdência Privada' },
-{ icon: Scale, label: 'Pensão Alimentícia' },
-{ icon: Users, label: 'Dependentes' }];
+{ key: 'saude', icon: Heart, label: 'Saúde / Médico', color: 'text-red-500', bg: 'bg-red-50' },
+{ key: 'dentista', icon: Smile, label: 'Saúde / Dentista', color: 'text-cyan-500', bg: 'bg-cyan-50' },
+{ key: 'educacao', icon: GraduationCap, label: 'Educação', color: 'text-blue-600', bg: 'bg-blue-50' },
+{ key: 'previdencia_privada', icon: Landmark, label: 'Previdência Privada', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+{ key: 'pensao_alimenticia', icon: Scale, label: 'Pensão Alimentícia', color: 'text-orange-500', bg: 'bg-orange-50' },
+{ key: 'dependentes', icon: Users, label: 'Dependentes', color: 'text-teal-600', bg: 'bg-teal-50' }];
 
 
 const steps = [
@@ -47,9 +50,118 @@ const steps = [
 { n: '3', title: 'Revise os Dados', desc: 'Confira e corrija os dados extraídos pela IA se necessário.' },
 { n: '4', title: 'Gere o Relatório', desc: 'Exporte o informe de restituição e entregue ao seu contador.' }];
 
+function DeductionInfoList({ items, icon: Icon, iconClassName }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {items.map((item) => (
+        <div key={item} className="flex items-start gap-2">
+          <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${iconClassName}`} />
+          <p className="text-xs font-semibold leading-relaxed text-slate-700">{item}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LandingDeductionModal({ categoryKey, onClose }) {
+  const content = categoryKey ? CATEGORY_INFO_CONTENT[categoryKey] : null;
+  const meta = deductions.find((item) => item.key === categoryKey);
+  const Icon = meta?.icon;
+  const verificationMessage = content?.important.find((item) => item.startsWith('O Restitua verifica'));
+  const importantItems = content?.important.filter((item) => item !== verificationMessage) || [];
+
+  return (
+    <Dialog open={Boolean(content)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-20px)] max-w-5xl overflow-hidden rounded-[28px] border-0 bg-white p-0 shadow-2xl">
+        {content ? (
+          <div className="max-h-[92vh] overflow-y-auto p-5 sm:p-8">
+            <div className="grid gap-6 pr-8 lg:grid-cols-[1fr_340px]">
+              <div className="flex gap-5">
+                <div className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl ${meta?.bg || 'bg-blue-50'}`}>
+                  {Icon ? <Icon className={`h-10 w-10 ${meta?.color || 'text-blue-600'}`} /> : null}
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black leading-tight text-slate-950 md:text-4xl">{content.title}</h2>
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-extrabold text-blue-700">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Dedutível no IR
+                  </div>
+                  <div className="mt-5 space-y-2">
+                    {content.description.map((description) => (
+                      <p key={description} className="text-sm font-medium leading-6 text-slate-600">
+                        {description}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {content.deductionNote ? (
+                <div className="rounded-2xl bg-blue-50 p-6 shadow-inner shadow-blue-100/50">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-slate-900">
+                    Regra de dedução
+                    <Info className="h-4 w-4 text-slate-500" />
+                  </div>
+                  <p className="text-xl font-black leading-tight text-blue-700">{content.deductionNote}</p>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-10 grid gap-6 lg:grid-cols-2">
+              <section>
+                <div className="mb-4 flex items-center gap-2 text-emerald-700">
+                  <CheckCircle className="h-5 w-5" />
+                  <h3 className="text-sm font-black">O que entra</h3>
+                </div>
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5">
+                  <DeductionInfoList items={content.included} icon={Check} iconClassName="text-emerald-600" />
+                </div>
+              </section>
+
+              <section>
+                <div className="mb-4 flex items-center gap-2 text-red-600">
+                  <X className="h-5 w-5 rounded-full border border-red-200 p-0.5" />
+                  <h3 className="text-sm font-black">O que não entra</h3>
+                </div>
+                <div className="rounded-2xl border border-red-100 bg-red-50/60 p-5">
+                  <DeductionInfoList items={content.excluded} icon={X} iconClassName="text-red-500" />
+                </div>
+              </section>
+            </div>
+
+            {importantItems.length > 0 ? (
+              <section className="mt-7 rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <Star className="h-5 w-5 text-blue-700" />
+                  <h3 className="text-sm font-black text-slate-950">Importante</h3>
+                </div>
+                <div className="space-y-2">
+                  {importantItems.map((item) => (
+                    <p key={item} className="text-sm font-semibold leading-6 text-slate-600">
+                      {item}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {verificationMessage ? (
+              <section className="mt-5 flex items-start gap-3 rounded-2xl bg-blue-50 p-5 text-blue-900">
+                <ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-blue-600" />
+                <p className="text-sm font-extrabold leading-6">{verificationMessage}</p>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedDeduction, setSelectedDeduction] = useState(null);
   const handleLogin = () => {
     base44.auth.redirectToLogin('/dashboard');
   };
@@ -173,12 +285,16 @@ export default function LandingPage() {
             {deductions.map((d, i) => {
             const Icon = d.icon;
             return (
-            <div key={i} className="bg-white/10 backdrop-blur rounded-2xl px-6 py-5 flex items-center gap-3">
+            <button
+              key={i}
+              type="button"
+              onClick={() => setSelectedDeduction(d.key)}
+              className="group bg-white/10 backdrop-blur rounded-2xl px-6 py-5 flex items-center gap-3 text-left transition-all hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white/70">
                 <div className="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center">
                   <Icon className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-medium text-white text-sm md:text-base">{d.label}</span>
-              </div>
+              </button>
             );
             })}
           </div>
@@ -283,6 +399,10 @@ export default function LandingPage() {
         </div>
         <p>© {new Date().getFullYear()} Restitua. Todos os direitos reservados.</p>
       </footer>
+      <LandingDeductionModal
+        categoryKey={selectedDeduction}
+        onClose={() => setSelectedDeduction(null)}
+      />
     </div>);
 
 }

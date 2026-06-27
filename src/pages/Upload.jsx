@@ -8,8 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Camera, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Upload, Camera, Loader2, ArrowLeft, CheckCircle, Crown, Infinity, Archive, ShieldCheck } from 'lucide-react';
 import CameraCapture from '@/components/CameraCapture';
+
+const PREMIUM_UPGRADE_URL = 'https://restitua.com/premium';
 
 const categorias = {
   saude: { nome: 'Saúde/Médica', icon: '🏥' },
@@ -25,6 +28,8 @@ const categorias = {
   vestuario: { nome: 'Vestuário', icon: '👔' },
   pets: { nome: 'Pets', icon: '🐾' },
   farmacia: { nome: 'Farmácia', icon: '💊' },
+  estetica_beleza: { nome: 'Estética / Beleza', icon: '✨' },
+  lazer_diversao: { nome: 'Lazer / Diversão', icon: '🎮' },
   outros: { nome: 'Outros', icon: '📦' }
 };
 
@@ -36,6 +41,7 @@ export default function UploadPage() {
   const [arquivo, setArquivo] = useState(null);
   const [dadosExtraidos, setDadosExtraidos] = useState(null);
   const [mostrarCamera, setMostrarCamera] = useState(false);
+  const [modalLimitePremiumAberto, setModalLimitePremiumAberto] = useState(false);
 
   // Web Worker source for off-main-thread image compression.
   // Uses OffscreenCanvas (supported in all modern browsers) so the heavy
@@ -119,7 +125,7 @@ export default function UploadPage() {
       - valor_total (valor total da nota)
       - data_emissao (data no formato YYYY-MM-DD)
       - numero_nota (número da nota fiscal)
-      - categoria_sugerida (sugira uma categoria entre: saude, educacao, alimentacao, transporte, moradia, servicos, vestuario, outros)
+      - categoria_sugerida (sugira uma categoria entre: saude, dentista, educacao, previdencia_privada, pensao_alimenticia, dependentes, alimentacao, transporte, moradia, servicos, vestuario, pets, farmacia, estetica_beleza, lazer_diversao, outros)
       - itens (array com descrição, quantidade, valor_unitario, valor_total de cada item se visível)`;
 
       const resultado = await base44.integrations.Core.InvokeLLM({
@@ -181,11 +187,17 @@ export default function UploadPage() {
 
       return { snapshots };
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       // Always restore snapshots atomically.
       ctx?.snapshots?.forEach(([key, data]) => {
         queryClient.setQueryData(key, data);
       });
+
+      if (err?.data?.message?.code === 'FREE_DAILY_NOTA_LIMIT_REACHED') {
+        setModalLimitePremiumAberto(true);
+        return;
+      }
+
       toast.error('Erro ao salvar a nota fiscal. Tente novamente.');
     },
     onSuccess: () => {
@@ -214,6 +226,51 @@ export default function UploadPage() {
         onCancel={() => setMostrarCamera(false)}
       />
     )}
+    <Dialog open={modalLimitePremiumAberto} onOpenChange={setModalLimitePremiumAberto}>
+      <DialogContent className="max-w-md rounded-3xl border-slate-200 p-6">
+        <DialogHeader className="items-center text-center">
+          <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+            <Crown className="h-7 w-7" />
+          </div>
+          <DialogTitle className="text-xl font-bold text-slate-950 dark:text-slate-50">
+            Limite diário atingido
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-center text-sm leading-6 text-slate-600 dark:text-slate-300">
+          No plano gratuito você pode cadastrar até 10 notas por dia. Assinantes Premium podem enviar notas ilimitadas
+          e manter os comprovantes organizados por 5 anos.
+        </p>
+        <div className="space-y-3 rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+          <div className="flex items-center gap-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <Infinity className="h-4 w-4 text-blue-700" />
+            Notas fiscais ilimitadas
+          </div>
+          <div className="flex items-center gap-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <Archive className="h-4 w-4 text-blue-700" />
+            Armazenamento por 5 anos
+          </div>
+          <div className="flex items-center gap-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <ShieldCheck className="h-4 w-4 text-blue-700" />
+            Organização segura para o IR
+          </div>
+        </div>
+        <Button
+          onClick={() => {
+            window.location.href = PREMIUM_UPGRADE_URL;
+          }}
+          className="h-12 rounded-xl bg-blue-600 text-sm font-semibold hover:bg-blue-700"
+        >
+          Assinar Premium
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => setModalLimitePremiumAberto(false)}
+          className="h-11 rounded-xl text-slate-600"
+        >
+          Talvez depois
+        </Button>
+      </DialogContent>
+    </Dialog>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <Button
