@@ -39,11 +39,10 @@ import NotasList from '../components/dashboard/NotasList';
 import { Skeleton } from '@/components/ui/skeleton';
 import { appLogo } from '@/brandAssets';
 import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
-import { CATEGORY_TOOLTIPS } from '@/constants/category-tooltips';
 
 const categorias = {
-  saude: { nome: 'Médico/Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
-  dentista: { nome: 'Dentista/Saúde', cor: 'bg-cyan-500', icon: Smile, iconColor: 'text-cyan-600 dark:text-cyan-300' },
+  saude: { nome: 'Médico / Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
+  dentista: { nome: 'Dentista / Saúde', cor: 'bg-cyan-500', icon: Smile, iconColor: 'text-cyan-600 dark:text-cyan-300' },
   educacao: { nome: 'Educação', cor: 'bg-blue-500', icon: GraduationCap, iconColor: 'text-blue-600 dark:text-blue-300' },
   previdencia_privada: { nome: 'Previdência Privada', cor: 'bg-emerald-600', icon: Landmark, iconColor: 'text-emerald-600 dark:text-emerald-300' },
   pensao_alimenticia: { nome: 'Pensão Alimentícia', cor: 'bg-orange-500', icon: Scale, iconColor: 'text-orange-600 dark:text-orange-300' },
@@ -62,7 +61,6 @@ const categorias = {
 
 export default function Dashboard() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
-  const [tooltipCategoria, setTooltipCategoria] = useState(null);
   const [modalCategoria, setModalCategoria] = useState(null);
   const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
   const [userEmail, setUserEmail] = useState(null);
@@ -83,7 +81,6 @@ export default function Dashboard() {
   const { indicatorStyle, isTriggered, isActive } = usePullToRefresh(handleRefresh);
 
   const handleCategoriaClick = useCallback((key) => {
-    setTooltipCategoria(null);
     setCategoriaSelecionada((prev) => (prev === key ? null : key));
   }, []);
 
@@ -275,13 +272,8 @@ export default function Dashboard() {
                     total={totalPorCategoria[key]}
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
                     ativo={categoriaSelecionada === key}
-                    onClick={() => {
-                      setTooltipCategoria(null);
-                      setModalCategoria(key);
-                    }}
-                    tooltipText={CATEGORY_TOOLTIPS[key]}
-                    tooltipOpen={tooltipCategoria === key}
-                    onTooltipOpenChange={(open) => setTooltipCategoria(open ? key : null)} />);
+                    onClick={() => handleCategoriaClick(key)}
+                    onInfoClick={() => setModalCategoria(key)} />);
 
 
               })}

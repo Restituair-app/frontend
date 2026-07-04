@@ -12,8 +12,8 @@ import { Loader2, Save, Trash2 } from 'lucide-react';
 import ResignedImage from '@/components/common/ResignedImage';
 
 const categorias = {
-  saude: { nome: 'Médico/Saúde', icon: '🏥' },
-  dentista: { nome: 'Dentista/Saúde', icon: '🦷' },
+  saude: { nome: 'Médico / Saúde', icon: '🏥' },
+  dentista: { nome: 'Dentista / Saúde', icon: '🦷' },
   educacao: { nome: 'Educação', icon: '📚' },
   previdencia_privada: { nome: 'Previdência Privada', icon: '🏦' },
   pensao_alimenticia: { nome: 'Pensão Alimentícia', icon: '⚖️' },

@@ -11,8 +11,8 @@ import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { appLogo } from '@/brandAssets';
 
 const categorias = {
-  saude: { nome: 'Médico/Saúde', cor: '#ef4444' },
-  dentista: { nome: 'Dentista/Saúde', cor: '#06b6d4' },
+  saude: { nome: 'Médico / Saúde', cor: '#ef4444' },
+  dentista: { nome: 'Dentista / Saúde', cor: '#06b6d4' },
   educacao: { nome: 'Educação', cor: '#3b82f6' },
   previdencia_privada: { nome: 'Previdência Privada', cor: '#059669' },
   pensao_alimenticia: { nome: 'Pensão Alimentícia', cor: '#f97316' },
