@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { getThemePreference, resolveTheme, setThemePreference } from '@/lib/theme';
-import { AlertTriangle, Trash2, LogOut, UserPen, CheckCircle, Moon, Sun } from 'lucide-react';
+import { getSubscriptionLabel, getSubscriptionTier, SUBSCRIPTION_TIERS } from '@/utils/subscriptionPlan';
+import { AlertTriangle, Trash2, LogOut, UserPen, CheckCircle, Moon, Sun, Crown } from 'lucide-react';
 
 function formatCPF(value) {
   return value.replace(/\D/g, '').slice(0, 11)
@@ -33,9 +34,11 @@ export default function Configuracoes() {
   const [erroCadastro, setErroCadastro] = useState('');
   const [sucessoCadastro, setSucessoCadastro] = useState(false);
   const [themeMode, setThemeMode] = useState('light');
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then((me) => {
+      setCurrentUser(me);
       setForm({
         nome_completo: me.nome_completo || '',
         cpf: me.cpf || '',
@@ -95,10 +98,55 @@ export default function Configuracoes() {
     setThemeMode(nextTheme);
   };
 
+  const subscriptionTier = getSubscriptionTier(currentUser);
+  const subscriptionLabel = getSubscriptionLabel(currentUser);
+  const subscriptionDescription = {
+    [SUBSCRIPTION_TIERS.FREE]: 'Exportação em PDF e histórico recente de notas.',
+    [SUBSCRIPTION_TIERS.BASIC]: 'CSV/Excel liberado e histórico de até 5 anos.',
+    [SUBSCRIPTION_TIERS.PREMIUM]: 'Histórico ilimitado, memórias da nota e recursos Premium.',
+  }[subscriptionTier];
+  const subscriptionStyle = {
+    [SUBSCRIPTION_TIERS.FREE]: {
+      card: 'border-slate-200 dark:border-slate-800',
+      icon: 'text-slate-500 dark:text-slate-300',
+      box: 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/70',
+      badge: 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
+    },
+    [SUBSCRIPTION_TIERS.BASIC]: {
+      card: 'border-blue-200 dark:border-blue-900/60',
+      icon: 'text-blue-600 dark:text-blue-300',
+      box: 'border-blue-200 bg-blue-50 dark:border-blue-500/30 dark:bg-blue-950/60',
+      badge: 'bg-blue-600 text-white dark:bg-blue-400/15 dark:text-blue-200 dark:ring-1 dark:ring-blue-300/25',
+    },
+    [SUBSCRIPTION_TIERS.PREMIUM]: {
+      card: 'border-amber-300 dark:border-amber-700/70',
+      icon: 'text-amber-600 dark:text-amber-300',
+      box: 'border-amber-300 bg-amber-50 dark:border-amber-400/30 dark:bg-amber-950/45',
+      badge: 'bg-amber-500 text-white dark:bg-amber-300/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-200/25',
+    },
+  }[subscriptionTier];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 md:p-8">
       <div className="max-w-lg mx-auto">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">Configurações da Conta</h1>
+
+        <Card className={`shadow-lg mb-4 ${subscriptionStyle.card}`}>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Crown className={`w-4 h-4 ${subscriptionStyle.icon}`} />
+              Plano ativo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`rounded-xl border p-4 ${subscriptionStyle.box}`}>
+              <p className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${subscriptionStyle.badge}`}>
+                {subscriptionLabel}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{subscriptionDescription}</p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Editar Dados Pessoais */}
         <Card className="shadow-lg mb-4">

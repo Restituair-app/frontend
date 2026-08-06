@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -28,6 +28,7 @@ import {
   Pill,
   Sparkles,
   Gamepad2,
+  Laptop,
   Package,
   CheckCircle,
 } from 'lucide-react';
@@ -39,6 +40,7 @@ import NotasList from '../components/dashboard/NotasList';
 import { Skeleton } from '@/components/ui/skeleton';
 import { appLogo } from '@/brandAssets';
 import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
+import { filterNotasByVisibleHistory, getVisibleYearOptions } from '@/utils/yearOptions';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
@@ -56,6 +58,7 @@ const categorias = {
   farmacia: { nome: 'Farmácia', cor: 'bg-lime-500', icon: Pill, iconColor: 'text-lime-600 dark:text-lime-300' },
   estetica_beleza: { nome: 'Estética / Beleza', cor: 'bg-pink-500', icon: Sparkles, iconColor: 'text-pink-600 dark:text-pink-300' },
   lazer_diversao: { nome: 'Lazer / Diversão', cor: 'bg-sky-500', icon: Gamepad2, iconColor: 'text-sky-600 dark:text-sky-300' },
+  eletronicos: { nome: 'Eletrônicos', cor: 'bg-slate-500', icon: Laptop, iconColor: 'text-slate-600 dark:text-slate-300' },
   outros: { nome: 'Outros', cor: 'bg-gray-500', icon: Package, iconColor: 'text-slate-600 dark:text-slate-300' },
 };
 
@@ -64,9 +67,13 @@ export default function Dashboard() {
   const [modalCategoria, setModalCategoria] = useState(null);
   const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
   const [userEmail, setUserEmail] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then((me) => setUserEmail(me.email)).catch(() => {});
+    base44.auth.me().then((me) => {
+      setUserEmail(me.email);
+      setCurrentUser(me);
+    }).catch(() => {});
   }, []);
 
   const { data: notas = [], isLoading, refetch } = useQuery({
@@ -84,7 +91,20 @@ export default function Dashboard() {
     setCategoriaSelecionada((prev) => (prev === key ? null : key));
   }, []);
 
-  const notasFiltradas = notas.filter((nota) => {
+  const visibleYearOptions = useMemo(() => getVisibleYearOptions(currentUser, notas), [currentUser, notas]);
+
+  useEffect(() => {
+    if (visibleYearOptions.length > 0 && !visibleYearOptions.includes(anoFiltro)) {
+      setAnoFiltro(visibleYearOptions[0]);
+    }
+  }, [anoFiltro, visibleYearOptions]);
+
+  const visibleNotas = useMemo(
+    () => filterNotasByVisibleHistory(notas, currentUser),
+    [notas, currentUser],
+  );
+
+  const notasFiltradas = visibleNotas.filter((nota) => {
     const anoNota = new Date(nota.data_emissao).getFullYear();
     const matchAno = anoNota === anoFiltro;
     const matchCategoria = !categoriaSelecionada || nota.categoria === categoriaSelecionada;
@@ -149,7 +169,7 @@ export default function Dashboard() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[2026, 2025, 2024, 2023, 2022].map((ano) => (
+                {visibleYearOptions.map((ano) => (
                   <SelectItem key={ano} value={String(ano)}>{ano}</SelectItem>
                 ))}
               </SelectContent>
@@ -286,7 +306,7 @@ export default function Dashboard() {
               <span className="text-xs font-semibold text-red-600 bg-red-100 px-3 py-1 rounded-full flex items-center gap-1 w-fit"><XCircle className="w-3.5 h-3.5" /> Não Restituível</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {['alimentacao', 'transporte', 'moradia', 'servicos', 'vestuario', 'pets', 'farmacia', 'estetica_beleza', 'lazer_diversao', 'outros'].map((key) => {
+              {['alimentacao', 'transporte', 'moradia', 'servicos', 'vestuario', 'pets', 'farmacia', 'estetica_beleza', 'lazer_diversao', 'eletronicos', 'outros'].map((key) => {
                 const cat = categorias[key];
                 return (
                   <CategoryCard

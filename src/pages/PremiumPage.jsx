@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Archive, CheckCircle2, Crown, Infinity, ReceiptText, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Crown, FileSpreadsheet, Infinity, ReceiptText, ShieldCheck } from 'lucide-react';
 
 import { appLogo } from '@/brandAssets';
 import { Button } from '@/components/ui/button';
@@ -13,9 +13,9 @@ const benefits = [
     description: 'Cadastre quantas notas precisar, sem o limite diário do plano gratuito.',
   },
   {
-    icon: Archive,
-    title: 'Armazenamento por 5 anos',
-    description: 'Mantenha seus comprovantes organizados pelo período recomendado para conferências do IR.',
+    icon: FileSpreadsheet,
+    title: 'CSV/Excel no Basic',
+    description: 'Assinantes Basic exportam relatórios em CSV compatível com Excel e contadores.',
   },
   {
     icon: ReceiptText,
@@ -53,14 +53,14 @@ export default function PremiumPage() {
         <section>
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-300/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-100">
             <Crown className="h-4 w-4" />
-            Restitua Premium
+            Restitua Planos
           </div>
           <h1 className="max-w-3xl text-3xl font-black leading-tight md:text-5xl">
             Mais liberdade para organizar suas notas e preparar seu Imposto de Renda.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">
-            O plano Premium foi pensado para quem precisa registrar muitas despesas ao longo do ano, guardar
-            comprovantes por mais tempo e manter tudo pronto para revisão, contador ou declaração.
+            Escolha entre Basic, para liberar CSV/Excel e histórico de até 5 anos, ou Premium, para usar
+            recursos avançados como notas ilimitadas, memória da nota e histórico completo.
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -79,47 +79,69 @@ export default function PremiumPage() {
           </div>
         </section>
 
-        <Card className="border-white/10 bg-white text-slate-950 shadow-2xl shadow-blue-950/30">
-          <CardContent className="p-7 md:p-8">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-700">Plano Premium</p>
-                <h2 className="mt-2 text-2xl font-black">Para usuários intensivos</h2>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
-                <Crown className="h-6 w-6" />
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-slate-50 p-5">
-              <p className="text-sm font-semibold text-slate-500">Inclui</p>
-              <div className="mt-4 space-y-3">
-                {[
-                  'Notas fiscais ilimitadas',
-                  'Armazenamento dos comprovantes por 5 anos',
-                  'Relatórios organizados para o IR',
-                  'Acesso ao histórico completo da conta',
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-800">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                    {item}
+        <div className="grid gap-5">
+          {[
+            {
+              name: 'Plano Basic',
+              subtitle: 'Para relatórios e histórico maior',
+              price: 'R$ 9,90',
+              icon: FileSpreadsheet,
+              cta: 'Assinar Basic',
+              features: ['Exportar CSV/Excel', 'Histórico de até 5 anos', 'Relatórios em PDF', 'Organização das notas por categoria'],
+              highlight: false,
+            },
+            {
+              name: 'Plano Premium',
+              subtitle: 'Para usuários intensivos',
+              price: 'R$ 29,90',
+              icon: Crown,
+              cta: 'Assinar Premium',
+              features: ['Tudo do Basic', 'Notas fiscais ilimitadas', 'Histórico completo sem limite de anos', 'Memória da Nota'],
+              highlight: true,
+            },
+          ].map((plan) => {
+            const Icon = plan.icon;
+            return (
+              <Card key={plan.name} className={`border-white/10 bg-white text-slate-950 shadow-2xl shadow-blue-950/30 ${plan.highlight ? 'ring-2 ring-blue-500' : ''}`}>
+                <CardContent className="p-7 md:p-8">
+                  <div className="mb-6 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-700">{plan.name}</p>
+                      <h2 className="mt-2 text-2xl font-black">{plan.subtitle}</h2>
+                      <p className="mt-2 text-3xl font-black text-slate-950">{plan.price}<span className="text-sm font-semibold text-slate-500">/mês</span></p>
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+                      <Icon className="h-6 w-6" />
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <Button
-              type="button"
-              className="mt-6 h-12 w-full rounded-xl bg-blue-600 py-6 text-base font-bold hover:bg-blue-700"
-              onClick={() => undefined}
-            >
-              Assinar Premium
-            </Button>
-            <p className="mt-3 text-center text-xs leading-5 text-slate-500">
-              O botão de assinatura ainda não inicia pagamento. Esta página prepara a experiência Premium para a próxima etapa.
-            </p>
-          </CardContent>
-        </Card>
+                  <div className="rounded-2xl bg-slate-50 p-5">
+                    <p className="text-sm font-semibold text-slate-500">Inclui</p>
+                    <div className="mt-4 space-y-3">
+                      {plan.features.map((item) => (
+                        <div key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-800">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    className="mt-6 h-12 w-full rounded-xl bg-blue-600 py-6 text-base font-bold hover:bg-blue-700"
+                    onClick={() => undefined}
+                  >
+                    {plan.cta}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+          <p className="text-center text-xs leading-5 text-slate-400">
+            Os botões de assinatura ainda não iniciam pagamento. Esta página prepara a experiência de planos para a próxima etapa.
+          </p>
+        </div>
       </main>
     </div>
   );

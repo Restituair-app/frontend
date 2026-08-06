@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lucide-react';
 // jsPDF and JSZip are loaded on-demand to keep the initial bundle small
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { appLogo } from '@/brandAssets';
+import { filterNotasByVisibleHistory, getVisibleYearOptions } from '@/utils/yearOptions';
+import { hasBasicAccess } from '@/utils/subscriptionPlan';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', cor: '#ef4444' },
@@ -26,15 +29,18 @@ const categorias = {
   farmacia: { nome: 'Farmácia', cor: '#84cc16' },
   estetica_beleza: { nome: 'Estética / Beleza', cor: '#ec4899' },
   lazer_diversao: { nome: 'Lazer / Diversão', cor: '#0ea5e9' },
+  eletronicos: { nome: 'Eletrônicos', cor: '#64748b' },
   outros: { nome: 'Outros', cor: '#6b7280' }
 };
 
 const CATEGORIAS_DEDUTIVEIS = ['saude', 'dentista', 'educacao', 'previdencia_privada', 'pensao_alimenticia', 'dependentes'];
+const BASIC_EXPORT_MESSAGE = 'CSV/Excel e ZIP estão disponíveis nos planos Basic e Premium. No plano gratuito você pode exportar o relatório em PDF.';
 
 export default function Relatorios() {
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
   const [mostrarInforme, setMostrarInforme] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState({ nome_completo: '', cpf: '' });
   const [isDarkMode, setIsDarkMode] = useState(() =>
     typeof window !== 'undefined' ? document.documentElement.classList.contains('dark') : false
@@ -43,6 +49,7 @@ export default function Relatorios() {
   useEffect(() => {
     base44.auth.me().then((me) => {
       setUserEmail(me.email);
+      setCurrentUser(me);
       setUserData({ nome_completo: me.nome_completo || '', cpf: me.cpf || '' });
     }).catch(() => {});
   }, []);
@@ -71,7 +78,29 @@ export default function Relatorios() {
     enabled: !!userEmail
   });
 
-  const notasAno = notas.filter((nota) =>
+  const visibleYearOptions = useMemo(() => getVisibleYearOptions(currentUser, notas), [currentUser, notas]);
+
+  useEffect(() => {
+    if (visibleYearOptions.length > 0 && !visibleYearOptions.includes(anoSelecionado)) {
+      setAnoSelecionado(visibleYearOptions[0]);
+    }
+  }, [anoSelecionado, visibleYearOptions]);
+
+  const visibleNotas = useMemo(
+    () => filterNotasByVisibleHistory(notas, currentUser),
+    [notas, currentUser],
+  );
+
+  const requireBasicExport = () => {
+    if (hasBasicAccess(currentUser)) {
+      return true;
+    }
+
+    toast.info(BASIC_EXPORT_MESSAGE);
+    return false;
+  };
+
+  const notasAno = visibleNotas.filter((nota) =>
   new Date(nota.data_emissao).getFullYear() === anoSelecionado
   );
 
@@ -124,6 +153,10 @@ export default function Relatorios() {
   }).filter((m) => m.total > 0);
 
   const exportarCSV = () => {
+    if (!requireBasicExport()) {
+      return;
+    }
+
     const headers = ['Data', 'Estabelecimento', 'Categoria', 'Valor', 'CNPJ', 'Número Nota'];
     const rows = notasAno.map((nota) => [
     nota.data_emissao,
@@ -241,6 +274,10 @@ export default function Relatorios() {
   };
 
   const exportarInformeRestituicao = () => {
+    if (!requireBasicExport()) {
+      return;
+    }
+
     const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
     const notasDedutiveis = notasAno
@@ -287,6 +324,10 @@ export default function Relatorios() {
   const [baixandoArquivos, setBaixandoArquivos] = useState(false);
 
   const downloadArquivosDedutiveis = async () => {
+    if (!requireBasicExport()) {
+      return;
+    }
+
     const notasComImagem = notasAno.filter(
       (n) => CATEGORIAS_DEDUTIVEIS.includes(n.categoria) && n.imagem_url
     );
@@ -361,7 +402,7 @@ export default function Relatorios() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[2026, 2025, 2024, 2023, 2022].map((ano) => (
+                    {visibleYearOptions.map((ano) => (
                       <SelectItem key={ano} value={String(ano)}>{ano}</SelectItem>
                     ))}
                   </SelectContent>

@@ -197,6 +197,16 @@ export default function NotasList({ notas, categorias }) {
                   />
                 </div>
               )}
+              {notaSelecionada.memoria_url && (
+                <div>
+                  <h4 className="font-semibold text-foreground mb-2">Memória da Nota</h4>
+                  <ResignedImage
+                    src={notaSelecionada.memoria_url}
+                    alt="Memória da nota"
+                    className="w-full rounded-lg shadow-md"
+                  />
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 {[
                   ['Estabelecimento', notaSelecionada.estabelecimento],

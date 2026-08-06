@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,8 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, Trash2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Camera, Loader2, Save, Trash2 } from 'lucide-react';
 import ResignedImage from '@/components/common/ResignedImage';
+import { hasPremiumAccess } from '@/utils/subscriptionPlan';
+
+const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
+const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
+const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', icon: '🏥' },
@@ -27,13 +34,20 @@ const categorias = {
   farmacia: { nome: 'Farmácia', icon: '💊' },
   estetica_beleza: { nome: 'Estética / Beleza', icon: '✨' },
   lazer_diversao: { nome: 'Lazer / Diversão', icon: '🎮' },
+  eletronicos: { nome: 'Eletrônicos', icon: '💻' },
   outros: { nome: 'Outros', icon: '📦' },
 };
 
 export default function EditNotaModal({ nota, onClose }) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const memoriaInputRef = useRef(null);
+  const isPremium = hasPremiumAccess(user);
   const [dados, setDados] = useState({ ...nota });
   const [confirmarDelete, setConfirmarDelete] = useState(false);
+  const [memoriaArquivo, setMemoriaArquivo] = useState(null);
+  const [memoriaPreview, setMemoriaPreview] = useState(null);
+  const [salvandoMemoria, setSalvandoMemoria] = useState(false);
 
   const handleChange = (field, value) => {
     setDados(prev => ({ ...prev, [field]: value }));
@@ -79,10 +93,47 @@ export default function EditNotaModal({ nota, onClose }) {
     onSuccess: () => onClose(),
   });
 
-  const salvando = updateMutation.isPending;
+  const salvando = updateMutation.isPending || salvandoMemoria;
   const deletando = deleteMutation.isPending;
 
-  const handleSalvar = () => updateMutation.mutate(dados);
+  const handleMemoriaSelect = (event) => {
+    if (!isPremium) {
+      toast.info(PREMIUM_MEMORY_TOOLTIP);
+      event.target.value = '';
+      return;
+    }
+
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+      toast.error('A memória deve ter no máximo 10 MB.');
+      return;
+    }
+
+    setMemoriaArquivo(file);
+    setMemoriaPreview(URL.createObjectURL(file));
+  };
+
+  const handleSalvar = async () => {
+    let payload = dados;
+
+    if (isPremium && memoriaArquivo) {
+      try {
+        setSalvandoMemoria(true);
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: memoriaArquivo });
+        payload = { ...dados, memoria_url: file_url };
+        setDados(payload);
+      } catch {
+        toast.error('Erro ao enviar a memória da nota. Tente novamente.');
+        return;
+      } finally {
+        setSalvandoMemoria(false);
+      }
+    }
+
+    updateMutation.mutate(payload);
+  };
   const handleDeletar = () => deleteMutation.mutate();
 
   return (
@@ -147,6 +198,92 @@ export default function EditNotaModal({ nota, onClose }) {
             <Textarea id="edit-obs" value={dados.observacoes || ''} onChange={e => handleChange('observacoes', e.target.value)} rows={3} />
           </div>
 
+          <div
+            className={`rounded-2xl border border-dashed p-4 transition ${
+              isPremium
+                ? 'border-slate-300 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-900/50'
+                : 'border-slate-200 bg-slate-100/80 opacity-70 dark:border-slate-700 dark:bg-slate-800/70'
+            }`}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <Label className={!isPremium ? 'text-slate-500 dark:text-slate-400' : ''}>Memória da Nota</Label>
+                <p className="text-sm text-muted-foreground">
+                  {isPremium ? 'Foto extra relacionada a essa despesa.' : 'Disponível para assinantes Premium.'}
+                </p>
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      onClick={() => {
+                        if (!isPremium) {
+                          toast.info(PREMIUM_MEMORY_TOOLTIP);
+                        }
+                      }}
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        aria-disabled={!isPremium}
+                        className={`gap-2 ${!isPremium ? 'cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300' : ''}`}
+                        onClick={() => {
+                          if (!isPremium) {
+                            toast.info(PREMIUM_MEMORY_TOOLTIP);
+                            return;
+                          }
+                          memoriaInputRef.current?.click();
+                        }}
+                      >
+                        <Camera className="h-4 w-4" />
+                        {memoriaArquivo || dados.memoria_url ? 'Trocar memória' : 'Adicionar memória'}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!isPremium ? <TooltipContent>{PREMIUM_MEMORY_TOOLTIP}</TooltipContent> : null}
+                </Tooltip>
+              </TooltipProvider>
+              <input
+                ref={memoriaInputRef}
+                type="file"
+                accept={ACCEPTED_MEMORY_FILE_TYPES}
+                capture="environment"
+                onChange={handleMemoriaSelect}
+                className="hidden"
+              />
+            </div>
+
+            {(memoriaPreview || dados.memoria_url) && (
+              <div className="mt-4">
+                {memoriaPreview ? (
+                  <img
+                    src={memoriaPreview}
+                    alt="Memória da nota"
+                    className="max-h-48 rounded-xl border border-slate-200 object-contain shadow-sm dark:border-slate-700"
+                  />
+                ) : (
+                  <ResignedImage
+                    src={dados.memoria_url}
+                    alt="Memória da nota"
+                    className="max-h-48 rounded-xl border border-slate-200 object-contain shadow-sm dark:border-slate-700"
+                  />
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="mt-2 text-slate-500"
+                  onClick={() => {
+                    setMemoriaArquivo(null);
+                    setMemoriaPreview(null);
+                    handleChange('memoria_url', null);
+                  }}
+                >
+                  Remover memória
+                </Button>
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* Rodapé fixo — sempre visível independente do scroll */}
@@ -168,7 +305,7 @@ export default function EditNotaModal({ nota, onClose }) {
 
             <Button onClick={handleSalvar} disabled={salvando} aria-label="Salvar alterações" className="gap-2 min-h-[44px] bg-blue-600 hover:bg-blue-700">
               {salvando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Salvar
+              {salvandoMemoria ? 'Enviando memória...' : 'Salvar'}
             </Button>
           </div>
       </DialogContent>

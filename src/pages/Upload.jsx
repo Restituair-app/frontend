@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,10 +10,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Upload, Camera, Loader2, ArrowLeft, CheckCircle, Crown, Infinity, Archive, ShieldCheck } from 'lucide-react';
 import CameraCapture from '@/components/CameraCapture';
+import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 
 const PREMIUM_UPGRADE_URL = 'https://restitua.com/premium';
+const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_ATTACHMENT_SIZE_LABEL = '10 MB';
+const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
+const ACCEPTED_NOTE_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
+const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif';
 
 const categorias = {
   saude: { nome: 'Saúde/Médica', icon: '🏥' },
@@ -30,11 +38,15 @@ const categorias = {
   farmacia: { nome: 'Farmácia', icon: '💊' },
   estetica_beleza: { nome: 'Estética / Beleza', icon: '✨' },
   lazer_diversao: { nome: 'Lazer / Diversão', icon: '🎮' },
+  eletronicos: { nome: 'Eletrônicos', icon: '💻' },
   outros: { nome: 'Outros', icon: '📦' }
 };
 
 export default function UploadPage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const memoriaInputRef = useRef(null);
+  const isPremium = hasPremiumAccess(user);
   const [processando, setProcessando] = useState(false);
   const [etapa, setEtapa] = useState('upload'); // upload, extraindo, revisao, concluido
   const [imagemPreview, setImagemPreview] = useState(null);
@@ -42,6 +54,41 @@ export default function UploadPage() {
   const [dadosExtraidos, setDadosExtraidos] = useState(null);
   const [mostrarCamera, setMostrarCamera] = useState(false);
   const [modalLimitePremiumAberto, setModalLimitePremiumAberto] = useState(false);
+  const [memoriaArquivo, setMemoriaArquivo] = useState(null);
+  const [memoriaPreview, setMemoriaPreview] = useState(null);
+  const [salvandoMemoria, setSalvandoMemoria] = useState(false);
+
+  const validateAttachmentSize = useCallback((file, label = 'arquivo') => {
+    if (file?.size > MAX_ATTACHMENT_SIZE_BYTES) {
+      toast.error(`O ${label} deve ter no máximo ${MAX_ATTACHMENT_SIZE_LABEL}.`);
+      return false;
+    }
+
+    return true;
+  }, []);
+
+  const isHeicLikeFile = useCallback((file) => {
+    const name = file?.name?.toLowerCase?.() || '';
+    const type = file?.type?.toLowerCase?.() || '';
+    return type === 'image/heic' || type === 'image/heif' || name.endsWith('.heic') || name.endsWith('.heif');
+  }, []);
+
+  const convertHeicToJpeg = useCallback(async (file) => {
+    const { default: heic2any } = await import('heic2any');
+    const converted = await heic2any({
+      blob: file,
+      toType: 'image/jpeg',
+      quality: 0.82,
+    });
+
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    const fileName = file.name.replace(/\.(heic|heif)$/i, '.jpg') || `nota-${Date.now()}.jpg`;
+
+    return new File([blob], fileName, {
+      type: 'image/jpeg',
+      lastModified: Date.now(),
+    });
+  }, []);
 
   // Web Worker source for off-main-thread image compression.
   // Uses OffscreenCanvas (supported in all modern browsers) so the heavy
@@ -88,25 +135,73 @@ export default function UploadPage() {
     });
   }, []);
 
+  const prepareImageFile = useCallback(async (file) => {
+    if (!file.type.startsWith('image/') && !isHeicLikeFile(file)) {
+      return file;
+    }
+
+    if (isHeicLikeFile(file)) {
+      const jpeg = await convertHeicToJpeg(file);
+      return compressImage(jpeg);
+    }
+
+    return compressImage(file);
+  }, [compressImage, convertHeicToJpeg, isHeicLikeFile]);
+
   const handleFileSelect = useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const compressed = await compressImage(file);
-    setArquivo(compressed);
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagemPreview(ev.target.result);
-    reader.readAsDataURL(compressed);
-  }, [compressImage]);
+    try {
+      const compressed = await prepareImageFile(file);
+      if (!validateAttachmentSize(compressed, 'arquivo da nota')) return;
+      setArquivo(compressed);
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagemPreview(ev.target.result);
+      reader.readAsDataURL(compressed);
+    } catch {
+      toast.error('Não foi possível converter o arquivo HEIC. Tente enviar em JPG, PNG ou PDF.');
+      e.target.value = '';
+    }
+  }, [prepareImageFile, validateAttachmentSize]);
 
   const handleCameraCapture = useCallback(async (file) => {
     setMostrarCamera(false);
-    const compressed = await compressImage(file);
-    setArquivo(compressed);
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagemPreview(ev.target.result);
-    reader.readAsDataURL(compressed);
-  }, [compressImage]);
+    try {
+      const compressed = await prepareImageFile(file);
+      if (!validateAttachmentSize(compressed, 'arquivo da nota')) return;
+      setArquivo(compressed);
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagemPreview(ev.target.result);
+      reader.readAsDataURL(compressed);
+    } catch {
+      toast.error('Não foi possível preparar a imagem. Tente enviar em JPG, PNG ou PDF.');
+    }
+  }, [prepareImageFile, validateAttachmentSize]);
+
+  const handleMemoriaSelect = useCallback(async (e) => {
+    if (!isPremium) {
+      toast.info(PREMIUM_MEMORY_TOOLTIP);
+      e.target.value = '';
+      return;
+    }
+
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const compressed = await prepareImageFile(file);
+      if (!validateAttachmentSize(compressed, 'arquivo de memória')) return;
+
+      setMemoriaArquivo(compressed);
+      const reader = new FileReader();
+      reader.onload = (ev) => setMemoriaPreview(ev.target.result);
+      reader.readAsDataURL(compressed);
+    } catch {
+      toast.error('Não foi possível converter o arquivo HEIC. Tente enviar em JPG ou PNG.');
+      e.target.value = '';
+    }
+  }, [isPremium, prepareImageFile, validateAttachmentSize]);
 
   const processarNota = async () => {
     if (!arquivo) return;
@@ -125,7 +220,7 @@ export default function UploadPage() {
       - valor_total (valor total da nota)
       - data_emissao (data no formato YYYY-MM-DD)
       - numero_nota (número da nota fiscal)
-      - categoria_sugerida (sugira uma categoria entre: saude, dentista, educacao, previdencia_privada, pensao_alimenticia, dependentes, alimentacao, transporte, moradia, servicos, vestuario, pets, farmacia, estetica_beleza, lazer_diversao, outros)
+      - categoria_sugerida (sugira uma categoria entre: saude, dentista, educacao, previdencia_privada, pensao_alimenticia, dependentes, alimentacao, transporte, moradia, servicos, vestuario, pets, farmacia, estetica_beleza, lazer_diversao, eletronicos, outros)
       - itens (array com descrição, quantidade, valor_unitario, valor_total de cada item se visível)`;
 
       const resultado = await base44.integrations.Core.InvokeLLM({
@@ -210,9 +305,35 @@ export default function UploadPage() {
     },
   });
 
-  const salvarNota = useCallback(() => {
-    if (dadosExtraidos) salvarMutation.mutate(dadosExtraidos);
-  }, [dadosExtraidos, salvarMutation]);
+  const salvarNota = useCallback(async () => {
+    if (!dadosExtraidos) return;
+
+    let payload = dadosExtraidos;
+
+    if (isPremium && memoriaArquivo && !dadosExtraidos.memoria_url) {
+      try {
+        setSalvandoMemoria(true);
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: memoriaArquivo });
+        payload = {
+          ...dadosExtraidos,
+          memoria_url: file_url,
+        };
+        setDadosExtraidos(payload);
+      } catch {
+        toast.error('Erro ao enviar a memória da nota. Tente novamente.');
+        return;
+      } finally {
+        setSalvandoMemoria(false);
+      }
+    }
+
+    if (!payload.memoria_url) {
+      const { memoria_url: _memoriaUrl, ...payloadSemMemoria } = payload;
+      payload = payloadSemMemoria;
+    }
+
+    salvarMutation.mutate(payload);
+  }, [dadosExtraidos, isPremium, memoriaArquivo, salvarMutation]);
 
   const handleInputChange = useCallback((field, value) => {
     setDadosExtraidos(prev => ({ ...prev, [field]: value }));
@@ -237,8 +358,8 @@ export default function UploadPage() {
           </DialogTitle>
         </DialogHeader>
         <p className="text-center text-sm leading-6 text-slate-600 dark:text-slate-300">
-          No plano gratuito você pode cadastrar até 10 notas por dia. Assinantes Premium podem enviar notas ilimitadas
-          e manter os comprovantes organizados por 5 anos.
+          No seu plano atual você pode cadastrar até 10 notas por dia. Assinantes Premium podem enviar notas ilimitadas
+          e manter os comprovantes organizados sem limite de histórico.
         </p>
         <div className="space-y-3 rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
           <div className="flex items-center gap-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -247,7 +368,7 @@ export default function UploadPage() {
           </div>
           <div className="flex items-center gap-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
             <Archive className="h-4 w-4 text-blue-700" />
-            Armazenamento por 5 anos
+            Histórico sem limite de anos
           </div>
           <div className="flex items-center gap-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
             <ShieldCheck className="h-4 w-4 text-blue-700" />
@@ -331,14 +452,14 @@ export default function UploadPage() {
                         </div>
                         <input
                           type="file"
-                          accept="image/*,application/pdf"
+                          accept={ACCEPTED_NOTE_FILE_TYPES}
                           onChange={handleFileSelect}
                           className="hidden"
                         />
                       </label>
                     </div>
                     <p className="text-sm text-slate-500 dark:text-slate-300">
-                      Formatos aceitos: JPG, PNG, PDF
+                      Formatos aceitos: JPG, PNG, HEIC e PDF
                     </p>
                   </div>
                 )}
@@ -482,15 +603,99 @@ export default function UploadPage() {
                 />
               </div>
 
+              <div
+                className={`rounded-2xl border border-dashed p-4 transition ${
+                  isPremium
+                    ? 'border-slate-300 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-900/50'
+                    : 'border-slate-200 bg-slate-100/80 opacity-70 dark:border-slate-700 dark:bg-slate-800/70'
+                }`}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <Label className={!isPremium ? 'text-slate-500 dark:text-slate-400' : ''}>Memória da Nota</Label>
+                    <p className="text-sm text-slate-500 dark:text-slate-300">
+                      {isPremium
+                        ? 'Anexe uma foto relacionada a essa despesa no dia.'
+                        : 'Disponível para assinantes Premium.'}
+                    </p>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          onClick={() => {
+                            if (!isPremium) {
+                              toast.info(PREMIUM_MEMORY_TOOLTIP);
+                            }
+                          }}
+                        >
+                          <Button
+                            type="button"
+                            variant="outline"
+                            aria-disabled={!isPremium}
+                            className={`gap-2 ${!isPremium ? 'cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300' : ''}`}
+                            onClick={() => {
+                              if (!isPremium) {
+                                toast.info(PREMIUM_MEMORY_TOOLTIP);
+                                return;
+                              }
+                              memoriaInputRef.current?.click();
+                            }}
+                          >
+                            <Camera className="h-4 w-4" />
+                            {memoriaArquivo || dadosExtraidos.memoria_url ? 'Trocar memória' : 'Adicionar memória'}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!isPremium ? <TooltipContent>{PREMIUM_MEMORY_TOOLTIP}</TooltipContent> : null}
+                    </Tooltip>
+                  </TooltipProvider>
+                  <input
+                    ref={memoriaInputRef}
+                    type="file"
+                    accept={ACCEPTED_MEMORY_FILE_TYPES}
+                    capture="environment"
+                    onChange={handleMemoriaSelect}
+                    className="hidden"
+                  />
+                </div>
+
+                {(memoriaPreview || dadosExtraidos.memoria_url) && (
+                  <div className="mt-4">
+                    <img
+                      src={memoriaPreview || dadosExtraidos.memoria_url}
+                      alt="Memória da nota"
+                      className="max-h-48 rounded-xl border border-slate-200 object-contain shadow-sm dark:border-slate-700"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="mt-2 text-slate-500"
+                      onClick={() => {
+                        setMemoriaArquivo(null);
+                        setMemoriaPreview(null);
+                        setDadosExtraidos((prev) => {
+                          if (!prev) return prev;
+                          const { memoria_url: _memoriaUrl, ...rest } = prev;
+                          return rest;
+                        });
+                      }}
+                    >
+                      Remover memória
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <Button
                 onClick={salvarNota}
-                disabled={salvarMutation.isPending}
+                disabled={salvarMutation.isPending || salvandoMemoria}
                 className="w-full bg-green-600 hover:bg-green-700 gap-2 py-6 text-lg"
               >
-                {salvarMutation.isPending ? (
+                {salvarMutation.isPending || salvandoMemoria ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Salvando...
+                    {salvandoMemoria ? 'Enviando memória...' : 'Salvando...'}
                   </>
                 ) : (
                   <>

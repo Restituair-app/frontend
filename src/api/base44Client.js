@@ -5,6 +5,7 @@ const API_BASE_URL = (
 ).replace(/\/$/, '');
 const ACCESS_TOKEN_KEY = 'base44_access_token';
 const REFRESH_TOKEN_KEY = 'base44_refresh_token';
+const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
 const NOTA_FISCAL_PAYLOAD_KEYS = [
   'estabelecimento',
   'cnpj',
@@ -15,6 +16,7 @@ const NOTA_FISCAL_PAYLOAD_KEYS = [
   'numero_nota',
   'itens',
   'observacoes',
+  'memoria_url',
 ];
 
 let accessToken = appParams.token || localStorage.getItem(ACCESS_TOKEN_KEY) || null;
@@ -328,6 +330,10 @@ const entities = {
 const integrations = {
   Core: {
     async UploadFile({ file }) {
+      if (file?.size > MAX_UPLOAD_SIZE_BYTES) {
+        throw new Error('O arquivo deve ter no máximo 10 MB.');
+      }
+
       const form = new FormData();
       form.append('file', file);
 
