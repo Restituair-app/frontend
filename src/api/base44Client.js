@@ -327,6 +327,60 @@ const entities = {
   },
 };
 
+const legalModels = {
+  async list() {
+    return request('/legal-models');
+  },
+
+  async get(id) {
+    return request(`/legal-models/${id}`);
+  },
+};
+
+const auditTickets = {
+  async list() {
+    return request('/audit-tickets');
+  },
+
+  async get(id) {
+    return request(`/audit-tickets/${id}`);
+  },
+
+  async request() {
+    return request('/audit-tickets', { method: 'POST' });
+  },
+};
+
+const supportTickets = {
+  async list() {
+    return request('/support-tickets');
+  },
+
+  async get(id) {
+    return request(`/support-tickets/${id}`);
+  },
+
+  async create(message) {
+    return request('/support-tickets', {
+      method: 'POST',
+      body: { message },
+    });
+  },
+
+  async reply(id, message) {
+    return request(`/support-tickets/${id}/messages`, {
+      method: 'POST',
+      body: { message },
+    });
+  },
+
+  async finalize(id) {
+    return request(`/support-tickets/${id}/finalize`, {
+      method: 'PATCH',
+    });
+  },
+};
+
 const integrations = {
   Core: {
     async UploadFile({ file }) {
@@ -367,5 +421,8 @@ export const base44 = {
   auth,
   entities,
   integrations,
+  legalModels,
+  auditTickets,
+  supportTickets,
   appLogs,
 };

@@ -13,12 +13,18 @@ import Dashboard from './pages/Dashboard'; // import direto — evita tela branc
 const Relatorios    = lazy(() => import('./pages/Relatorios'));
 const Upload        = lazy(() => import('./pages/Upload'));
 const Configuracoes = lazy(() => import('./pages/Configuracoes'));
+const ModelosJuridicos = lazy(() => import('./pages/ModelosJuridicos'));
+const AuditoriaTrimestral = lazy(() => import('./pages/AuditoriaTrimestral'));
+const SuportePremium = lazy(() => import('./pages/SuportePremium'));
 
 export const PAGES = {
     "Dashboard":     Dashboard,
     "Relatorios":    Relatorios,
     "Upload":        Upload,
     "Configuracoes": Configuracoes,
+    "ModelosJuridicos": ModelosJuridicos,
+    "AuditoriaTrimestral": AuditoriaTrimestral,
+    "SuportePremium": SuportePremium,
 };
 
 export const pagesConfig = {

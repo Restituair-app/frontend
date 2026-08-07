@@ -153,8 +153,17 @@ export default function UploadPage() {
     if (!file) return;
 
     try {
+      if (!validateAttachmentSize(file, 'arquivo da nota')) {
+        e.target.value = '';
+        return;
+      }
+
       const compressed = await prepareImageFile(file);
-      if (!validateAttachmentSize(compressed, 'arquivo da nota')) return;
+      if (!validateAttachmentSize(compressed, 'arquivo da nota')) {
+        e.target.value = '';
+        return;
+      }
+
       setArquivo(compressed);
       const reader = new FileReader();
       reader.onload = (ev) => setImagemPreview(ev.target.result);
@@ -168,6 +177,8 @@ export default function UploadPage() {
   const handleCameraCapture = useCallback(async (file) => {
     setMostrarCamera(false);
     try {
+      if (!validateAttachmentSize(file, 'arquivo da nota')) return;
+
       const compressed = await prepareImageFile(file);
       if (!validateAttachmentSize(compressed, 'arquivo da nota')) return;
       setArquivo(compressed);
@@ -190,8 +201,16 @@ export default function UploadPage() {
     if (!file) return;
 
     try {
+      if (!validateAttachmentSize(file, 'arquivo de memória')) {
+        e.target.value = '';
+        return;
+      }
+
       const compressed = await prepareImageFile(file);
-      if (!validateAttachmentSize(compressed, 'arquivo de memória')) return;
+      if (!validateAttachmentSize(compressed, 'arquivo de memória')) {
+        e.target.value = '';
+        return;
+      }
 
       setMemoriaArquivo(compressed);
       const reader = new FileReader();

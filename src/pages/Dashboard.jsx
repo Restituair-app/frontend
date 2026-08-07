@@ -10,6 +10,8 @@ import {
   Receipt,
   TrendingUp,
   FileText,
+  FileSearch,
+  MessageCircle,
   LogOut,
   XCircle,
   RefreshCw,
@@ -31,8 +33,10 @@ import {
   Laptop,
   Package,
   CheckCircle,
+  Crown,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import usePullToRefresh from '../hooks/usePullToRefresh';
 import CategoryCard from '../components/dashboard/CategoryCard';
 import CategoryInfoModal from '../components/dashboard/CategoryInfoModal';
@@ -41,6 +45,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { appLogo } from '@/brandAssets';
 import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
 import { filterNotasByVisibleHistory, getVisibleYearOptions } from '@/utils/yearOptions';
+import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
@@ -103,6 +108,7 @@ export default function Dashboard() {
     () => filterNotasByVisibleHistory(notas, currentUser),
     [notas, currentUser],
   );
+  const isPremium = hasPremiumAccess(currentUser);
 
   const notasFiltradas = visibleNotas.filter((nota) => {
     const anoNota = new Date(nota.data_emissao).getFullYear();
@@ -262,6 +268,154 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="mb-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  {isPremium ? (
+                    <Link to={createPageUrl('ModelosJuridicos')} className="block w-full">
+                      <Button
+                        variant="outline"
+                        className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
+                      >
+                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                          <Crown className="h-2 w-2" /> Premium
+                        </span>
+                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
+                          <FileText className="h-4 w-4" />
+                        </span>
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                          <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelos Jurídicos</span>
+                          <span className="text-xs font-normal text-muted-foreground">Visualize e baixe documentos de apoio</span>
+                        </span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div
+                      role="button"
+                      aria-disabled="true"
+                      className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-slate-200 bg-white/60 p-3 pr-8 text-left opacity-65 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
+                    >
+                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-600/55 dark:text-amber-300/60">
+                        <Crown className="h-2 w-2" /> Premium
+                      </span>
+                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        <FileText className="h-4 w-4" />
+                      </span>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Modelos Jurídicos</span>
+                        <span className="text-xs font-normal text-muted-foreground">Disponível para assinantes Premium</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {!isPremium ? (
+                <TooltipContent>
+                  Funcionalidade Premium. Assine um plano no site do Restitua para acessar.
+                </TooltipContent>
+              ) : null}
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  {isPremium ? (
+                    <Link to={createPageUrl('AuditoriaTrimestral')} className="block w-full">
+                      <Button
+                        variant="outline"
+                        className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
+                      >
+                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                          <Crown className="h-2 w-2" /> Premium
+                        </span>
+                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
+                          <FileSearch className="h-4 w-4" />
+                        </span>
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                          <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Auditoria Trimestral</span>
+                          <span className="text-xs font-normal text-muted-foreground">Solicite análise das notas restituíveis</span>
+                        </span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div
+                      role="button"
+                      aria-disabled="true"
+                      className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-slate-200 bg-white/60 p-3 pr-8 text-left opacity-65 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
+                    >
+                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-600/55 dark:text-amber-300/60">
+                        <Crown className="h-2 w-2" /> Premium
+                      </span>
+                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        <FileSearch className="h-4 w-4" />
+                      </span>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Auditoria Trimestral</span>
+                        <span className="text-xs font-normal text-muted-foreground">Disponível para assinantes Premium</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {!isPremium ? (
+                <TooltipContent>
+                  Funcionalidade Premium. Assine um plano no site do Restitua para acessar.
+                </TooltipContent>
+              ) : null}
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  {isPremium ? (
+                    <Link to={createPageUrl('SuportePremium')} className="block w-full">
+                      <Button
+                        variant="outline"
+                        className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
+                      >
+                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                          <Crown className="h-2 w-2" /> Premium
+                        </span>
+                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
+                          <MessageCircle className="h-4 w-4" />
+                        </span>
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                          <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Suporte Premium</span>
+                          <span className="text-xs font-normal text-muted-foreground">Fale diretamente com o suporte</span>
+                        </span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div
+                      role="button"
+                      aria-disabled="true"
+                      className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-slate-200 bg-white/60 p-3 pr-8 text-left opacity-65 shadow-sm dark:border-slate-700 dark:bg-slate-900/60"
+                    >
+                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-600/55 dark:text-amber-300/60">
+                        <Crown className="h-2 w-2" /> Premium
+                      </span>
+                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        <MessageCircle className="h-4 w-4" />
+                      </span>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Suporte Premium</span>
+                        <span className="text-xs font-normal text-muted-foreground">Disponível para assinantes Premium</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {!isPremium ? (
+                <TooltipContent>
+                  Funcionalidade Premium. Assine um plano no site do Restitua para acessar.
+                </TooltipContent>
+              ) : null}
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Grid de Categorias */}
