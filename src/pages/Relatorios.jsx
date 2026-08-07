@@ -10,7 +10,6 @@ import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lu
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { appLogo } from '@/brandAssets';
-import { filterNotasByVisibleHistory, getVisibleYearOptions } from '@/utils/yearOptions';
 import { hasBasicAccess } from '@/utils/subscriptionPlan';
 
 const categorias = {
@@ -29,12 +28,41 @@ const categorias = {
   farmacia: { nome: 'Farmácia', cor: '#84cc16' },
   estetica_beleza: { nome: 'Estética / Beleza', cor: '#ec4899' },
   lazer_diversao: { nome: 'Lazer / Diversão', cor: '#0ea5e9' },
-  eletronicos: { nome: 'Eletrônicos', cor: '#64748b' },
+  eletronicos: { nome: 'Eletrônicos / Eletrodomésticos', cor: '#64748b' },
   outros: { nome: 'Outros', cor: '#6b7280' }
 };
 
 const CATEGORIAS_DEDUTIVEIS = ['saude', 'dentista', 'educacao', 'previdencia_privada', 'pensao_alimenticia', 'dependentes'];
-const BASIC_EXPORT_MESSAGE = 'CSV/Excel e ZIP estão disponíveis nos planos Basic e Premium. No plano gratuito você pode exportar o relatório em PDF.';
+const DEFAULT_MIN_YEAR = 2022;
+const FREE_COMPROVANTES_HISTORY_MONTHS = 12;
+const BASIC_EXPORT_MESSAGE = 'CSV/Excel está disponível nos planos Basic e Premium. No plano gratuito você pode exportar o relatório em PDF.';
+
+const getYearFromNota = (nota) => {
+  const year = Number(String(nota?.data_emissao || '').slice(0, 4));
+  return Number.isFinite(year) ? year : null;
+};
+
+const getReportYearOptions = (notas = []) => {
+  const yearsFromNotas = notas.map(getYearFromNota).filter(Boolean);
+  const years = new Set([new Date().getFullYear(), ...yearsFromNotas]);
+  return Array.from(years).filter((year) => year >= DEFAULT_MIN_YEAR).sort((a, b) => b - a);
+};
+
+const getFreeComprovantesStartDate = () => {
+  const start = new Date();
+  start.setMonth(start.getMonth() - FREE_COMPROVANTES_HISTORY_MONTHS);
+  return start;
+};
+
+const wasNotaUploadedAfter = (nota, startDate) => {
+  const createdAt = nota?.createdAt || nota?.created_date;
+  if (!createdAt) {
+    return false;
+  }
+
+  const createdDate = new Date(createdAt);
+  return Number.isFinite(createdDate.getTime()) && createdDate >= startDate;
+};
 
 export default function Relatorios() {
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
@@ -78,18 +106,13 @@ export default function Relatorios() {
     enabled: !!userEmail
   });
 
-  const visibleYearOptions = useMemo(() => getVisibleYearOptions(currentUser, notas), [currentUser, notas]);
+  const visibleYearOptions = useMemo(() => getReportYearOptions(notas), [notas]);
 
   useEffect(() => {
     if (visibleYearOptions.length > 0 && !visibleYearOptions.includes(anoSelecionado)) {
       setAnoSelecionado(visibleYearOptions[0]);
     }
   }, [anoSelecionado, visibleYearOptions]);
-
-  const visibleNotas = useMemo(
-    () => filterNotasByVisibleHistory(notas, currentUser),
-    [notas, currentUser],
-  );
 
   const requireBasicExport = () => {
     if (hasBasicAccess(currentUser)) {
@@ -100,7 +123,7 @@ export default function Relatorios() {
     return false;
   };
 
-  const notasAno = visibleNotas.filter((nota) =>
+  const notasAno = notas.filter((nota) =>
   new Date(nota.data_emissao).getFullYear() === anoSelecionado
   );
 
@@ -324,51 +347,75 @@ export default function Relatorios() {
   const [baixandoArquivos, setBaixandoArquivos] = useState(false);
 
   const downloadArquivosDedutiveis = async () => {
-    if (!requireBasicExport()) {
-      return;
-    }
+    const isBasicOrPremium = hasBasicAccess(currentUser);
+    const freeStartDate = getFreeComprovantesStartDate();
 
     const notasComImagem = notasAno.filter(
-      (n) => CATEGORIAS_DEDUTIVEIS.includes(n.categoria) && n.imagem_url
+      (n) =>
+        n.imagem_url &&
+        (isBasicOrPremium || wasNotaUploadedAfter(n, freeStartDate))
     );
 
     if (notasComImagem.length === 0) {
-      alert('Nenhuma nota dedutível com arquivo anexado encontrada para este ano.');
+      toast.info(
+        isBasicOrPremium
+          ? 'Nenhuma nota com arquivo anexado encontrada para este ano.'
+          : 'No plano gratuito, o download de comprovantes libera apenas notas enviadas nos últimos 12 meses.'
+      );
       return;
     }
 
     setBaixandoArquivos(true);
-    const { default: JSZip } = await import('jszip');
-    const zip = new JSZip();
-    const pasta = zip.folder(`dedutiveis-${anoSelecionado}`);
+    try {
+      const { default: JSZip } = await import('jszip');
+      const zip = new JSZip();
+      const pasta = zip.folder(`comprovantes-${anoSelecionado}`);
+      let arquivosAdicionados = 0;
 
-    await Promise.all(
-      notasComImagem.map(async (nota, idx) => {
-        const sourceUrl = (await resignS3UrlOnClient(nota.imagem_url)) || nota.imagem_url;
-        let resp = await fetch(sourceUrl);
-        if (!resp.ok) {
-          const refreshedUrl = await resignS3UrlOnClient(sourceUrl, true);
-          if (refreshedUrl) {
-            resp = await fetch(refreshedUrl);
+      await Promise.all(
+        notasComImagem.map(async (nota, idx) => {
+          try {
+            const sourceUrl = (await resignS3UrlOnClient(nota.imagem_url)) || nota.imagem_url;
+            let resp = await fetch(sourceUrl);
+            if (!resp.ok) {
+              const refreshedUrl = await resignS3UrlOnClient(sourceUrl, true);
+              if (refreshedUrl) {
+                resp = await fetch(refreshedUrl);
+              }
+            }
+            if (!resp.ok) {
+              return;
+            }
+            const blob = await resp.blob();
+            const ext = sourceUrl.split('.').pop().split('?')[0] || 'jpg';
+            const categoria = categorias[nota.categoria]?.nome || nota.categoria || 'categoria';
+            const nomeArq = `${String(idx + 1).padStart(3, '0')}_${categoria.replace(/[^a-zA-Z0-9]/g, '_')}_${(nota.estabelecimento || 'nota').replace(/[^a-zA-Z0-9]/g, '_')}_${nota.data_emissao}.${ext}`;
+            pasta.file(nomeArq, blob);
+            arquivosAdicionados += 1;
+          } catch {
+            // Continua gerando o ZIP com os demais comprovantes disponíveis.
           }
-        }
-        if (!resp.ok) {
-          return;
-        }
-        const blob = await resp.blob();
-        const ext = sourceUrl.split('.').pop().split('?')[0] || 'jpg';
-        const nomeArq = `${String(idx + 1).padStart(3, '0')}_${(nota.estabelecimento || 'nota').replace(/[^a-zA-Z0-9]/g, '_')}_${nota.data_emissao}.${ext}`;
-        pasta.file(nomeArq, blob);
-      })
-    );
+        })
+      );
 
-    const content = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(content);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `comprovantes-dedutiveis-${anoSelecionado}.zip`;
-    a.click();
-    setBaixandoArquivos(false);
+      if (arquivosAdicionados === 0) {
+        toast.error('Não foi possível baixar os arquivos das notas. Tente novamente em instantes.');
+        return;
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `comprovantes-${anoSelecionado}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`${arquivosAdicionados} comprovante${arquivosAdicionados === 1 ? '' : 's'} baixado${arquivosAdicionados === 1 ? '' : 's'}.`);
+    } catch {
+      toast.error('Erro ao gerar o ZIP de comprovantes. Tente novamente.');
+    } finally {
+      setBaixandoArquivos(false);
+    }
   };
 
   const chartGridColor = isDarkMode ? 'rgba(148, 163, 184, 0.2)' : 'rgba(100, 116, 139, 0.25)';

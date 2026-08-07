@@ -11,9 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Upload, Camera, Loader2, ArrowLeft, CheckCircle, Crown, Infinity, Archive, ShieldCheck } from 'lucide-react';
+import { Upload, Camera, FileText, Loader2, ArrowLeft, CheckCircle, Crown, Infinity, Archive, ShieldCheck, Info } from 'lucide-react';
 import CameraCapture from '@/components/CameraCapture';
 import { hasPremiumAccess } from '@/utils/subscriptionPlan';
+import { getWarrantyStatus, parseWarrantyMonths, WARRANTY_INFO_TEXT } from '@/utils/warranty';
 
 const PREMIUM_UPGRADE_URL = 'https://restitua.com/premium';
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
@@ -21,7 +22,18 @@ const MAX_ATTACHMENT_SIZE_LABEL = '10 MB';
 const UPLOAD_SIZE_ERROR_MESSAGE = `O arquivo selecionado tem mais de ${MAX_ATTACHMENT_SIZE_LABEL}. Escolha uma imagem ou PDF menor para continuar.`;
 const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
 const ACCEPTED_NOTE_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
-const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif';
+const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
+
+const isPdfLikeValue = (value) => {
+  if (!value) return false;
+  if (typeof value === 'string') {
+    return value.split('?')[0].toLowerCase().endsWith('.pdf');
+  }
+
+  const name = value.name?.toLowerCase?.() || '';
+  const type = value.type?.toLowerCase?.() || '';
+  return type === 'application/pdf' || name.endsWith('.pdf');
+};
 
 const categorias = {
   saude: { nome: 'Saúde/Médica', icon: '🏥' },
@@ -39,7 +51,7 @@ const categorias = {
   farmacia: { nome: 'Farmácia', icon: '💊' },
   estetica_beleza: { nome: 'Estética / Beleza', icon: '✨' },
   lazer_diversao: { nome: 'Lazer / Diversão', icon: '🎮' },
-  eletronicos: { nome: 'Eletrônicos', icon: '💻' },
+  eletronicos: { nome: 'Eletrônicos / Eletrodomésticos', icon: '💻' },
   outros: { nome: 'Outros', icon: '📦' }
 };
 
@@ -223,7 +235,7 @@ export default function UploadPage() {
       reader.onload = (ev) => setMemoriaPreview(ev.target.result);
       reader.readAsDataURL(compressed);
     } catch {
-      toast.error('Não foi possível converter o arquivo HEIC. Tente enviar em JPG ou PNG.');
+      toast.error('Não foi possível converter o arquivo HEIC. Tente enviar em JPG, PNG ou PDF.');
       e.target.value = '';
     }
   }, [isPremium, prepareImageFile, validateAttachmentSize]);
@@ -360,6 +372,11 @@ export default function UploadPage() {
       const { memoria_url: _memoriaUrl, ...payloadSemMemoria } = payload;
       payload = payloadSemMemoria;
     }
+
+    payload = {
+      ...payload,
+      garantia_meses: payload.categoria === 'eletronicos' ? payload.garantia_meses ?? null : null,
+    };
 
     salvarMutation.mutate(payload);
   }, [dadosExtraidos, isPremium, isUploadSizeError, memoriaArquivo, salvarMutation]);
@@ -622,6 +639,45 @@ export default function UploadPage() {
                 </div>
               </div>
 
+              {dadosExtraidos.categoria === 'eletronicos' && (
+                  <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/60">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Label htmlFor="garantia_meses">Tempo de garantia</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label="Controle a garantia do seu produto"
+                              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-slate-800"
+                            >
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-sm whitespace-pre-line text-sm leading-5">
+                            {WARRANTY_INFO_TEXT}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <span className="text-xs font-medium text-muted-foreground">Controle a garantia do seu produto</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1.2fr]">
+                      <Input
+                        id="garantia_meses"
+                        type="number"
+                        min="0"
+                        inputMode="numeric"
+                        placeholder="Ex: 12 meses"
+                        value={dadosExtraidos.garantia_meses ?? ''}
+                        onChange={(e) => handleInputChange('garantia_meses', parseWarrantyMonths(e.target.value))}
+                      />
+                      <div className="flex min-h-[44px] items-center rounded-xl border border-blue-100 bg-white px-3 text-sm font-semibold text-blue-900 dark:border-blue-400/20 dark:bg-slate-950 dark:text-blue-200">
+                        {getWarrantyStatus(dadosExtraidos.data_emissao, dadosExtraidos.garantia_meses)}
+                      </div>
+                    </div>
+                  </div>
+              )}
+
               <div>
                 <Label htmlFor="observacoes">Observações</Label>
                 <Textarea
@@ -644,7 +700,7 @@ export default function UploadPage() {
                     <Label className={!isPremium ? 'text-slate-500 dark:text-slate-400' : ''}>Memória da Nota</Label>
                     <p className="text-sm text-slate-500 dark:text-slate-300">
                       {isPremium
-                        ? 'Anexe uma foto relacionada a essa despesa no dia.'
+                        ? 'Anexe uma foto ou PDF relacionado a essa despesa no dia.'
                         : 'Disponível para assinantes Premium.'}
                     </p>
                   </div>
@@ -683,7 +739,6 @@ export default function UploadPage() {
                     ref={memoriaInputRef}
                     type="file"
                     accept={ACCEPTED_MEMORY_FILE_TYPES}
-                    capture="environment"
                     onChange={handleMemoriaSelect}
                     className="hidden"
                   />
@@ -691,11 +746,20 @@ export default function UploadPage() {
 
                 {(memoriaPreview || dadosExtraidos.memoria_url) && (
                   <div className="mt-4">
-                    <img
-                      src={memoriaPreview || dadosExtraidos.memoria_url}
-                      alt="Memória da nota"
-                      className="max-h-48 rounded-xl border border-slate-200 object-contain shadow-sm dark:border-slate-700"
-                    />
+                    {isPdfLikeValue(memoriaArquivo || dadosExtraidos.memoria_url) ? (
+                      <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white/70 p-4 text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100">
+                        <FileText className="h-6 w-6 text-blue-600" />
+                        <span className="text-sm font-medium">
+                          {memoriaArquivo?.name || 'Memória em PDF anexada'}
+                        </span>
+                      </div>
+                    ) : (
+                      <img
+                        src={memoriaPreview || dadosExtraidos.memoria_url}
+                        alt="Memória da nota"
+                        className="max-h-48 rounded-xl border border-slate-200 object-contain shadow-sm dark:border-slate-700"
+                      />
+                    )}
                     <Button
                       type="button"
                       variant="ghost"

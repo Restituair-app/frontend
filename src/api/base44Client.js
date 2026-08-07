@@ -18,6 +18,7 @@ const NOTA_FISCAL_PAYLOAD_KEYS = [
   'itens',
   'observacoes',
   'memoria_url',
+  'garantia_meses',
 ];
 
 let accessToken = appParams.token || localStorage.getItem(ACCESS_TOKEN_KEY) || null;

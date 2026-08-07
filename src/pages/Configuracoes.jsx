@@ -101,7 +101,7 @@ export default function Configuracoes() {
   const subscriptionTier = getSubscriptionTier(currentUser);
   const subscriptionLabel = getSubscriptionLabel(currentUser);
   const subscriptionDescription = {
-    [SUBSCRIPTION_TIERS.FREE]: 'Exportação em PDF e histórico recente de notas.',
+    [SUBSCRIPTION_TIERS.FREE]: 'PDF e relatórios sem limite; comprovantes dos últimos 12 meses.',
     [SUBSCRIPTION_TIERS.BASIC]: 'CSV/Excel liberado e histórico de até 5 anos.',
     [SUBSCRIPTION_TIERS.PREMIUM]: 'Histórico ilimitado, memórias da nota e recursos Premium.',
   }[subscriptionTier];

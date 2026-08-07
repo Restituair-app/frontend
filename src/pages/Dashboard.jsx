@@ -63,7 +63,7 @@ const categorias = {
   farmacia: { nome: 'Farmácia', cor: 'bg-lime-500', icon: Pill, iconColor: 'text-lime-600 dark:text-lime-300' },
   estetica_beleza: { nome: 'Estética / Beleza', cor: 'bg-pink-500', icon: Sparkles, iconColor: 'text-pink-600 dark:text-pink-300' },
   lazer_diversao: { nome: 'Lazer / Diversão', cor: 'bg-sky-500', icon: Gamepad2, iconColor: 'text-sky-600 dark:text-sky-300' },
-  eletronicos: { nome: 'Eletrônicos', cor: 'bg-slate-500', icon: Laptop, iconColor: 'text-slate-600 dark:text-slate-300' },
+  eletronicos: { nome: 'Eletrônicos / Eletrodomésticos', cor: 'bg-slate-500', icon: Laptop, iconColor: 'text-slate-600 dark:text-slate-300' },
   outros: { nome: 'Outros', cor: 'bg-gray-500', icon: Package, iconColor: 'text-slate-600 dark:text-slate-300' },
 };
 

@@ -10,14 +10,26 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Camera, Loader2, Save, Trash2 } from 'lucide-react';
+import { Camera, FileText, Info, Loader2, Save, Trash2 } from 'lucide-react';
 import ResignedImage from '@/components/common/ResignedImage';
 import { hasPremiumAccess } from '@/utils/subscriptionPlan';
+import { getWarrantyStatus, parseWarrantyMonths, WARRANTY_INFO_TEXT } from '@/utils/warranty';
 
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
-const UPLOAD_SIZE_ERROR_MESSAGE = 'O arquivo selecionado tem mais de 10 MB. Escolha uma imagem menor para continuar.';
+const UPLOAD_SIZE_ERROR_MESSAGE = 'O arquivo selecionado tem mais de 10 MB. Escolha uma imagem ou PDF menor para continuar.';
 const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
-const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif';
+const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
+
+const isPdfLikeValue = (value) => {
+  if (!value) return false;
+  if (typeof value === 'string') {
+    return value.split('?')[0].toLowerCase().endsWith('.pdf');
+  }
+
+  const name = value.name?.toLowerCase?.() || '';
+  const type = value.type?.toLowerCase?.() || '';
+  return type === 'application/pdf' || name.endsWith('.pdf');
+};
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', icon: '🏥' },
@@ -35,7 +47,7 @@ const categorias = {
   farmacia: { nome: 'Farmácia', icon: '💊' },
   estetica_beleza: { nome: 'Estética / Beleza', icon: '✨' },
   lazer_diversao: { nome: 'Lazer / Diversão', icon: '🎮' },
-  eletronicos: { nome: 'Eletrônicos', icon: '💻' },
+  eletronicos: { nome: 'Eletrônicos / Eletrodomésticos', icon: '💻' },
   outros: { nome: 'Outros', icon: '📦' },
 };
 
@@ -123,13 +135,16 @@ export default function EditNotaModal({ nota, onClose }) {
   };
 
   const handleSalvar = async () => {
-    let payload = dados;
+    let payload = {
+      ...dados,
+      garantia_meses: dados.categoria === 'eletronicos' ? dados.garantia_meses ?? null : null,
+    };
 
     if (isPremium && memoriaArquivo) {
       try {
         setSalvandoMemoria(true);
         const { file_url } = await base44.integrations.Core.UploadFile({ file: memoriaArquivo });
-        payload = { ...dados, memoria_url: file_url };
+        payload = { ...payload, memoria_url: file_url };
         setDados(payload);
       } catch (error) {
         toast.error(isUploadSizeError(error) ? UPLOAD_SIZE_ERROR_MESSAGE : 'Erro ao enviar a memória da nota. Tente novamente.');
@@ -200,6 +215,45 @@ export default function EditNotaModal({ nota, onClose }) {
             </div>
           </div>
 
+          {dados.categoria === 'eletronicos' && (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/60">
+              <div className="mb-3 flex items-center gap-2">
+                <Label htmlFor="edit-garantia">Tempo de garantia</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Controle a garantia do seu produto"
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-slate-800"
+                      >
+                        <Info className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-sm whitespace-pre-line text-sm leading-5">
+                      {WARRANTY_INFO_TEXT}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <span className="text-xs font-medium text-muted-foreground">Controle a garantia do seu produto</span>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1.2fr]">
+                <Input
+                  id="edit-garantia"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  placeholder="Ex: 12 meses"
+                  value={dados.garantia_meses ?? ''}
+                  onChange={(e) => handleChange('garantia_meses', parseWarrantyMonths(e.target.value))}
+                />
+                <div className="flex min-h-[44px] items-center rounded-xl border border-blue-100 bg-white px-3 text-sm font-semibold text-blue-900 dark:border-blue-400/20 dark:bg-slate-950 dark:text-blue-200">
+                  {getWarrantyStatus(dados.data_emissao, dados.garantia_meses)}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div>
             <Label htmlFor="edit-obs">Observações</Label>
             <Textarea id="edit-obs" value={dados.observacoes || ''} onChange={e => handleChange('observacoes', e.target.value)} rows={3} />
@@ -216,7 +270,7 @@ export default function EditNotaModal({ nota, onClose }) {
               <div>
                 <Label className={!isPremium ? 'text-slate-500 dark:text-slate-400' : ''}>Memória da Nota</Label>
                 <p className="text-sm text-muted-foreground">
-                  {isPremium ? 'Foto extra relacionada a essa despesa.' : 'Disponível para assinantes Premium.'}
+                  {isPremium ? 'Foto ou PDF relacionado a essa despesa.' : 'Disponível para assinantes Premium.'}
                 </p>
               </div>
               <TooltipProvider>
@@ -254,7 +308,6 @@ export default function EditNotaModal({ nota, onClose }) {
                 ref={memoriaInputRef}
                 type="file"
                 accept={ACCEPTED_MEMORY_FILE_TYPES}
-                capture="environment"
                 onChange={handleMemoriaSelect}
                 className="hidden"
               />
@@ -262,7 +315,14 @@ export default function EditNotaModal({ nota, onClose }) {
 
             {(memoriaPreview || dados.memoria_url) && (
               <div className="mt-4">
-                {memoriaPreview ? (
+                {isPdfLikeValue(memoriaArquivo || dados.memoria_url) ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white/70 p-4 text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100">
+                    <FileText className="h-6 w-6 text-blue-600" />
+                    <span className="text-sm font-medium">
+                      {memoriaArquivo?.name || 'Memória em PDF anexada'}
+                    </span>
+                  </div>
+                ) : memoriaPreview ? (
                   <img
                     src={memoriaPreview}
                     alt="Memória da nota"

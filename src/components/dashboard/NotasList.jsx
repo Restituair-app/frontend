@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Building2, Calendar, Receipt, X, Pencil, ChevronDown, ChevronRight } from 'lucide-react';
+import { Eye, Building2, Calendar, Receipt, X, Pencil, ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Dialog,
@@ -13,6 +13,53 @@ import {
 } from "@/components/ui/dialog";
 import EditNotaModal from './EditNotaModal';
 import ResignedImage from '@/components/common/ResignedImage';
+import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
+import { getWarrantyStatus } from '@/utils/warranty';
+
+const isPdfUrl = (url) => String(url || '').split('?')[0].toLowerCase().endsWith('.pdf');
+
+function ResignedDocumentLink({ src, label }) {
+  const [href, setHref] = useState(src || '');
+
+  useEffect(() => {
+    let mounted = true;
+    setHref(src || '');
+
+    if (!src) {
+      return () => {
+        mounted = false;
+      };
+    }
+
+    resignS3UrlOnClient(src)
+      .then((nextUrl) => {
+        if (mounted && nextUrl) {
+          setHref(nextUrl);
+        }
+      })
+      .catch(() => {
+        // mantém a URL original como fallback
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [src]);
+
+  if (!src) return null;
+
+  return (
+    <a
+      href={href || src}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-3 rounded-xl border border-border bg-background/70 p-4 text-foreground shadow-sm transition hover:bg-muted"
+    >
+      <FileText className="h-6 w-6 text-blue-600" />
+      <span className="text-sm font-medium">{label}</span>
+    </a>
+  );
+}
 
 // Month header component
 const MesHeader = memo(function MesHeader({ chave, notasDoMes, oculto, toggleMes }) {
@@ -200,11 +247,15 @@ export default function NotasList({ notas, categorias }) {
               {notaSelecionada.memoria_url && (
                 <div>
                   <h4 className="font-semibold text-foreground mb-2">Memória da Nota</h4>
-                  <ResignedImage
-                    src={notaSelecionada.memoria_url}
-                    alt="Memória da nota"
-                    className="w-full rounded-lg shadow-md"
-                  />
+                  {isPdfUrl(notaSelecionada.memoria_url) ? (
+                    <ResignedDocumentLink src={notaSelecionada.memoria_url} label="Abrir memória em PDF" />
+                  ) : (
+                    <ResignedImage
+                      src={notaSelecionada.memoria_url}
+                      alt="Memória da nota"
+                      className="w-full rounded-lg shadow-md"
+                    />
+                  )}
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
@@ -222,6 +273,18 @@ export default function NotasList({ notas, categorias }) {
                   </div>
                 ))}
               </div>
+
+              {notaSelecionada.categoria === 'eletronicos' && (
+                <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-400/20 dark:bg-slate-900">
+                  <p className="text-sm text-muted-foreground">Garantia</p>
+                  <p className="font-semibold text-foreground">
+                    {notaSelecionada.garantia_meses ? `${notaSelecionada.garantia_meses} meses` : 'Não informada'}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-blue-800 dark:text-blue-200">
+                    {getWarrantyStatus(notaSelecionada.data_emissao, notaSelecionada.garantia_meses)}
+                  </p>
+                </div>
+              )}
 
               {notaSelecionada.itens?.length > 0 && (
                 <div>
