@@ -18,6 +18,7 @@ import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 const PREMIUM_UPGRADE_URL = 'https://restitua.com/premium';
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENT_SIZE_LABEL = '10 MB';
+const UPLOAD_SIZE_ERROR_MESSAGE = `O arquivo selecionado tem mais de ${MAX_ATTACHMENT_SIZE_LABEL}. Escolha uma imagem ou PDF menor para continuar.`;
 const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
 const ACCEPTED_NOTE_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
 const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif';
@@ -60,11 +61,16 @@ export default function UploadPage() {
 
   const validateAttachmentSize = useCallback((file, label = 'arquivo') => {
     if (file?.size > MAX_ATTACHMENT_SIZE_BYTES) {
-      toast.error(`O ${label} deve ter no máximo ${MAX_ATTACHMENT_SIZE_LABEL}.`);
+      toast.error(UPLOAD_SIZE_ERROR_MESSAGE);
       return false;
     }
 
     return true;
+  }, []);
+
+  const isUploadSizeError = useCallback((error) => {
+    const message = String(error?.message || error?.data?.message?.message || '').toLowerCase();
+    return error?.status === 413 || message.includes('10 mb') || message.includes('file too large') || message.includes('limit_file_size');
   }, []);
 
   const isHeicLikeFile = useCallback((file) => {
@@ -279,7 +285,11 @@ export default function UploadPage() {
 
       setEtapa('revisao');
     } catch (error) {
-      alert('Erro ao processar a nota fiscal. Tente novamente.');
+      if (isUploadSizeError(error)) {
+        toast.error(UPLOAD_SIZE_ERROR_MESSAGE);
+      } else {
+        toast.error('Erro ao processar a nota fiscal. Tente novamente.');
+      }
       setEtapa('upload');
     } finally {
       setProcessando(false);
@@ -338,8 +348,8 @@ export default function UploadPage() {
           memoria_url: file_url,
         };
         setDadosExtraidos(payload);
-      } catch {
-        toast.error('Erro ao enviar a memória da nota. Tente novamente.');
+      } catch (error) {
+        toast.error(isUploadSizeError(error) ? UPLOAD_SIZE_ERROR_MESSAGE : 'Erro ao enviar a memória da nota. Tente novamente.');
         return;
       } finally {
         setSalvandoMemoria(false);
@@ -352,7 +362,7 @@ export default function UploadPage() {
     }
 
     salvarMutation.mutate(payload);
-  }, [dadosExtraidos, isPremium, memoriaArquivo, salvarMutation]);
+  }, [dadosExtraidos, isPremium, isUploadSizeError, memoriaArquivo, salvarMutation]);
 
   const handleInputChange = useCallback((field, value) => {
     setDadosExtraidos(prev => ({ ...prev, [field]: value }));

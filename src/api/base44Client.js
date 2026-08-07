@@ -6,6 +6,7 @@ const API_BASE_URL = (
 const ACCESS_TOKEN_KEY = 'base44_access_token';
 const REFRESH_TOKEN_KEY = 'base44_refresh_token';
 const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
+const UPLOAD_SIZE_ERROR_MESSAGE = 'O arquivo selecionado tem mais de 10 MB. Escolha uma imagem ou PDF menor para continuar.';
 const NOTA_FISCAL_PAYLOAD_KEYS = [
   'estabelecimento',
   'cnpj',
@@ -385,7 +386,7 @@ const integrations = {
   Core: {
     async UploadFile({ file }) {
       if (file?.size > MAX_UPLOAD_SIZE_BYTES) {
-        throw new Error('O arquivo deve ter no máximo 10 MB.');
+        throw new Error(UPLOAD_SIZE_ERROR_MESSAGE);
       }
 
       const form = new FormData();

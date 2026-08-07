@@ -15,6 +15,7 @@ import ResignedImage from '@/components/common/ResignedImage';
 import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
+const UPLOAD_SIZE_ERROR_MESSAGE = 'O arquivo selecionado tem mais de 10 MB. Escolha uma imagem menor para continuar.';
 const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
 const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif';
 
@@ -96,6 +97,11 @@ export default function EditNotaModal({ nota, onClose }) {
   const salvando = updateMutation.isPending || salvandoMemoria;
   const deletando = deleteMutation.isPending;
 
+  const isUploadSizeError = (error) => {
+    const message = String(error?.message || error?.data?.message?.message || '').toLowerCase();
+    return error?.status === 413 || message.includes('10 mb') || message.includes('file too large') || message.includes('limit_file_size');
+  };
+
   const handleMemoriaSelect = (event) => {
     if (!isPremium) {
       toast.info(PREMIUM_MEMORY_TOOLTIP);
@@ -107,7 +113,8 @@ export default function EditNotaModal({ nota, onClose }) {
     if (!file) return;
 
     if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
-      toast.error('A memória deve ter no máximo 10 MB.');
+      toast.error(UPLOAD_SIZE_ERROR_MESSAGE);
+      event.target.value = '';
       return;
     }
 
@@ -124,8 +131,8 @@ export default function EditNotaModal({ nota, onClose }) {
         const { file_url } = await base44.integrations.Core.UploadFile({ file: memoriaArquivo });
         payload = { ...dados, memoria_url: file_url };
         setDados(payload);
-      } catch {
-        toast.error('Erro ao enviar a memória da nota. Tente novamente.');
+      } catch (error) {
+        toast.error(isUploadSizeError(error) ? UPLOAD_SIZE_ERROR_MESSAGE : 'Erro ao enviar a memória da nota. Tente novamente.');
         return;
       } finally {
         setSalvandoMemoria(false);
