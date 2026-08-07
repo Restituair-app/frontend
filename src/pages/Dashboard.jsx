@@ -67,6 +67,9 @@ const categorias = {
   outros: { nome: 'Outros', cor: 'bg-gray-500', icon: Package, iconColor: 'text-slate-600 dark:text-slate-300' },
 };
 
+const PETS_INFO_TOOLTIP =
+  'Existe Projeto de Lei nº 6307/2025 proposto pelo Deputado Federal Stélio Dener que propõe a alteração da Lei nº 9.250, de 26 de dezembro de 1995, para instituir incentivo fiscal às despesas com saúde preventiva de animais de estimação, no âmbito da Política Nacional de Saúde Única Homem-Animal-Ambiente, e dá outras providências.\n\nEm resumo o projeto prevê a dedução no imposto de renda de gastos com saúde de pets.\n\nCaso queira acompanhar a tramitação do projeto de lei e sua aprovação poderá acessar diretamente no endereço oficial da Câmara dos Deputados: Portal da Câmara dos Deputados (https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2594651), inclusive contribuindo com sua opinião, apoio e votação.\n\nNão deixe de anexar suas fotos e gastos com a saúde dos seus pets! Caso o projeto de lei venha a ser aprovado você já estará na frente e munido de documentação para pedir sua devida restituição de imposto.';
+
 export default function Dashboard() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [modalCategoria, setModalCategoria] = useState(null);
@@ -473,7 +476,8 @@ export default function Dashboard() {
                     total={totalPorCategoria[key]}
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
                     ativo={categoriaSelecionada === key}
-                    onClick={() => handleCategoriaClick(key)} />);
+                    onClick={() => handleCategoriaClick(key)}
+                    infoTooltip={key === 'pets' ? PETS_INFO_TOOLTIP : undefined} />);
 
 
               })}
