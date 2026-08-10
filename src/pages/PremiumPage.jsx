@@ -171,15 +171,15 @@ function PlanCard({ plan, loadingPlan, onCheckout }) {
         </div>
       )}
 
-      <div className={`relative flex h-full flex-col rounded-[1.7rem] ${plan.shellGlow} p-6 backdrop-blur-xl md:p-7`}>
+      <div className={`relative flex h-full flex-col rounded-[1.7rem] ${plan.shellGlow} p-5 backdrop-blur-xl md:p-7`}>
         <PlanIconCluster icons={plan.iconCluster} iconBox={plan.iconBox} />
 
         <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">{plan.eyebrow}</p>
         <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950 dark:text-white">{plan.name}</h2>
-        <p className="mt-3 min-h-[3rem] text-sm leading-6 text-slate-600 dark:text-slate-300">{plan.description}</p>
+        <p className="mt-3 min-h-[3rem] text-xs leading-5 text-slate-600 dark:text-slate-300 md:text-sm md:leading-6">{plan.description}</p>
 
         <div className="mt-6 flex items-end gap-1 text-slate-950 dark:text-white">
-          <span className="text-4xl font-black tracking-tight">{plan.price}</span>
+          <span className="text-3xl font-black tracking-tight md:text-4xl">{plan.price}</span>
           <span className="pb-1.5 text-sm font-bold text-slate-500 dark:text-slate-400">{plan.period}</span>
         </div>
 
@@ -319,17 +319,17 @@ export default function PremiumPage() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:py-16">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-16">
         <section className="mx-auto max-w-4xl text-center">
-          <h1 className="text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl">
+          <h1 className="text-xl font-medium leading-tight tracking-tight text-white md:text-5xl">
             Escolha o plano que acompanha o tamanho da sua organização fiscal.
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-300">
+          <p className="mx-auto mt-2 max-w-2xl text-xs leading-5 text-slate-300 md:mt-5 md:text-base md:leading-7">
             Do informe gratuito ao acompanhamento premium, cada plano foi pensado para manter suas notas, relatórios e documentos em ordem sem complicar sua rotina.
           </p>
         </section>
 
-        <section className="mt-9 grid gap-3 rounded-[2rem] border border-white/10 bg-white/[0.07] p-3 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mt-4 hidden gap-3 rounded-[2rem] border border-white/10 bg-white/[0.07] p-3 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl md:grid sm:grid-cols-2 lg:grid-cols-4">
           {quickHighlights.map((item) => {
             const Icon = item.icon;
             return (
@@ -343,13 +343,15 @@ export default function PremiumPage() {
           })}
         </section>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-3">
+        <section className="-mx-4 mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-10 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0 md:pb-0">
           {plans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} loadingPlan={loadingPlan} onCheckout={openCheckoutPrompt} />
+            <div key={plan.id} className="w-[82vw] max-w-[24rem] shrink-0 snap-center md:w-auto md:max-w-none">
+              <PlanCard plan={plan} loadingPlan={loadingPlan} onCheckout={openCheckoutPrompt} />
+            </div>
           ))}
         </section>
 
-        <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-5 text-slate-400">
+        <p className="mx-auto mt-3 max-w-2xl text-center text-[11px] leading-4 text-slate-500 md:mt-8 md:text-xs md:leading-5 md:text-slate-400">
           Ambiente em modo mock: Basic e Premium são ativados sem cobrança até a integração definitiva do gateway de pagamento.
         </p>
       </main>
