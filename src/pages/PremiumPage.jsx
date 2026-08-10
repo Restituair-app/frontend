@@ -214,14 +214,69 @@ function PlanCard({ plan, loadingPlan, onCheckout }) {
   );
 }
 
+function CouponCheckoutModal({ plan, couponCode, loading, onCouponChange, onClose, onSubmit }) {
+  if (!plan) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 px-5 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-[2rem] border border-white/12 bg-slate-950/92 p-6 text-white shadow-[0_30px_90px_rgba(0,0,0,0.45)]">
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-200">Cupom opcional</p>
+        <h2 className="mt-3 text-2xl font-semibold">Antes de ir para o checkout</h2>
+        <p className="mt-3 text-sm leading-6 text-slate-300">
+          Se você recebeu um cupom do Restitua, informe abaixo. Se não tiver, pode continuar normalmente.
+        </p>
+
+        <label className="mt-5 block">
+          <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Código do cupom</span>
+          <input
+            value={couponCode}
+            onChange={(event) => onCouponChange(event.target.value.toUpperCase())}
+            placeholder="EX: RESTITUA10"
+            className="mt-2 h-12 w-full rounded-2xl border border-white/12 bg-white/8 px-4 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-blue-300/70 focus:ring-4 focus:ring-blue-500/15"
+          />
+        </label>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            className="h-11 rounded-2xl border border-white/12 bg-transparent px-4 text-sm font-bold text-slate-200 transition hover:bg-white/8"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="h-11 rounded-2xl border border-blue-300/50 bg-blue-500 px-4 text-sm font-black text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={onSubmit}
+            disabled={loading}
+          >
+            {loading ? 'Criando checkout...' : couponCode.trim() ? 'Aplicar e continuar' : 'Continuar sem cupom'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PremiumPage() {
   const [loadingPlan, setLoadingPlan] = useState('');
+  const [pendingPlan, setPendingPlan] = useState('');
+  const [couponCode, setCouponCode] = useState('');
 
-  const handleCheckout = async (plan) => {
+  const openCheckoutPrompt = (plan) => {
+    setPendingPlan(plan);
+    setCouponCode('');
+  };
+
+  const handleCheckout = async () => {
+    const plan = pendingPlan;
     setLoadingPlan(plan);
 
     try {
-      const response = await base44.billing.createCheckout({ plan });
+      const response = await base44.billing.createCheckout({ plan, couponCode: couponCode.trim() });
       window.location.href = response?.checkoutUrl || `/premium?checkout=mock&plan=${plan}&status=success`;
     } catch (error) {
       if (error?.status === 401) {
@@ -232,6 +287,15 @@ export default function PremiumPage() {
       alert(error?.message || 'Não foi possível iniciar a assinatura.');
       setLoadingPlan('');
     }
+  };
+
+  const closeCheckoutPrompt = () => {
+    if (loadingPlan) {
+      return;
+    }
+
+    setPendingPlan('');
+    setCouponCode('');
   };
 
   return (
@@ -281,7 +345,7 @@ export default function PremiumPage() {
 
         <section className="mt-10 grid gap-6 lg:grid-cols-3">
           {plans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} loadingPlan={loadingPlan} onCheckout={handleCheckout} />
+            <PlanCard key={plan.id} plan={plan} loadingPlan={loadingPlan} onCheckout={openCheckoutPrompt} />
           ))}
         </section>
 
@@ -289,6 +353,15 @@ export default function PremiumPage() {
           Ambiente em modo mock: Basic e Premium são ativados sem cobrança até a integração definitiva do gateway de pagamento.
         </p>
       </main>
+
+      <CouponCheckoutModal
+        plan={pendingPlan}
+        couponCode={couponCode}
+        loading={Boolean(loadingPlan)}
+        onCouponChange={setCouponCode}
+        onClose={closeCheckoutPrompt}
+        onSubmit={handleCheckout}
+      />
     </div>
   );
 }
