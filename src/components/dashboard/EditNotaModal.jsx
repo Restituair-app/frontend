@@ -11,9 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Camera, FileText, Info, Loader2, Save, Trash2 } from 'lucide-react';
+import WarrantyInfoModal from '@/components/common/WarrantyInfoModal';
 import ResignedImage from '@/components/common/ResignedImage';
 import { hasPremiumAccess } from '@/utils/subscriptionPlan';
-import { getWarrantyStatus, parseWarrantyMonths, WARRANTY_INFO_TEXT } from '@/utils/warranty';
+import { getWarrantyStatus, parseWarrantyMonths } from '@/utils/warranty';
 
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
 const UPLOAD_SIZE_ERROR_MESSAGE = 'O arquivo selecionado tem mais de 10 MB. Escolha uma imagem ou PDF menor para continuar.';
@@ -61,6 +62,7 @@ export default function EditNotaModal({ nota, onClose }) {
   const [memoriaArquivo, setMemoriaArquivo] = useState(null);
   const [memoriaPreview, setMemoriaPreview] = useState(null);
   const [salvandoMemoria, setSalvandoMemoria] = useState(false);
+  const [warrantyInfoOpen, setWarrantyInfoOpen] = useState(false);
 
   const handleChange = (field, value) => {
     setDados(prev => ({ ...prev, [field]: value }));
@@ -159,6 +161,7 @@ export default function EditNotaModal({ nota, onClose }) {
   const handleDeletar = () => deleteMutation.mutate();
 
   return (
+    <>
     <Dialog open onOpenChange={onClose}>
       <DialogContent
         className="max-w-2xl flex flex-col max-h-[90vh] p-0 gap-0"
@@ -219,22 +222,14 @@ export default function EditNotaModal({ nota, onClose }) {
             <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/60">
               <div className="mb-3 flex items-center gap-2">
                 <Label htmlFor="edit-garantia">Tempo de garantia</Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        aria-label="Controle a garantia do seu produto"
-                        className="inline-flex h-6 w-6 items-center justify-center rounded-full text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-slate-800"
-                      >
-                        <Info className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-sm whitespace-pre-line text-sm leading-5">
-                      {WARRANTY_INFO_TEXT}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button
+                  type="button"
+                  aria-label="Controle a garantia do seu produto"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-slate-800"
+                  onClick={() => setWarrantyInfoOpen(true)}
+                >
+                  <Info className="h-4 w-4" />
+                </button>
                 <span className="text-xs font-medium text-muted-foreground">Controle a garantia do seu produto</span>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1.2fr]">
@@ -377,5 +372,7 @@ export default function EditNotaModal({ nota, onClose }) {
           </div>
       </DialogContent>
     </Dialog>
+    <WarrantyInfoModal open={warrantyInfoOpen} onClose={() => setWarrantyInfoOpen(false)} />
+    </>
   );
 }

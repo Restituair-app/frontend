@@ -40,11 +40,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import usePullToRefresh from '../hooks/usePullToRefresh';
 import CategoryCard from '../components/dashboard/CategoryCard';
 import CategoryInfoModal from '../components/dashboard/CategoryInfoModal';
+import PetsInfoModal from '../components/dashboard/PetsInfoModal';
 import NotasList from '../components/dashboard/NotasList';
 import { Skeleton } from '@/components/ui/skeleton';
 import { appLogo } from '@/brandAssets';
 import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
-import { filterNotasByVisibleHistory, getVisibleYearOptions } from '@/utils/yearOptions';
+import { getVisibleYearOptions } from '@/utils/yearOptions';
 import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 
 const categorias = {
@@ -67,12 +68,10 @@ const categorias = {
   outros: { nome: 'Outros', cor: 'bg-gray-500', icon: Package, iconColor: 'text-slate-600 dark:text-slate-300' },
 };
 
-const PETS_INFO_TOOLTIP =
-  'Existe Projeto de Lei nº 6307/2025 proposto pelo Deputado Federal Stélio Dener que propõe a alteração da Lei nº 9.250, de 26 de dezembro de 1995, para instituir incentivo fiscal às despesas com saúde preventiva de animais de estimação, no âmbito da Política Nacional de Saúde Única Homem-Animal-Ambiente, e dá outras providências.\n\nEm resumo o projeto prevê a dedução no imposto de renda de gastos com saúde de pets.\n\nCaso queira acompanhar a tramitação do projeto de lei e sua aprovação poderá acessar diretamente no endereço oficial da Câmara dos Deputados: Portal da Câmara dos Deputados (https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2594651), inclusive contribuindo com sua opinião, apoio e votação.\n\nNão deixe de anexar suas fotos e gastos com a saúde dos seus pets! Caso o projeto de lei venha a ser aprovado você já estará na frente e munido de documentação para pedir sua devida restituição de imposto.';
-
 export default function Dashboard() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [modalCategoria, setModalCategoria] = useState(null);
+  const [petsInfoOpen, setPetsInfoOpen] = useState(false);
   const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
   const [userEmail, setUserEmail] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -107,13 +106,9 @@ export default function Dashboard() {
     }
   }, [anoFiltro, visibleYearOptions]);
 
-  const visibleNotas = useMemo(
-    () => filterNotasByVisibleHistory(notas, currentUser),
-    [notas, currentUser],
-  );
   const isPremium = hasPremiumAccess(currentUser);
 
-  const notasFiltradas = visibleNotas.filter((nota) => {
+  const notasFiltradas = notas.filter((nota) => {
     const anoNota = new Date(nota.data_emissao).getFullYear();
     const matchAno = anoNota === anoFiltro;
     const matchCategoria = !categoriaSelecionada || nota.categoria === categoriaSelecionada;
@@ -291,7 +286,7 @@ export default function Dashboard() {
                           <FileText className="h-4 w-4" />
                         </span>
                         <span className="flex min-w-0 flex-col gap-0.5">
-                          <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelos Jurídicos</span>
+                          <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</span>
                           <span className="text-xs font-normal text-muted-foreground">Visualize e baixe documentos de apoio</span>
                         </span>
                       </Button>
@@ -309,7 +304,7 @@ export default function Dashboard() {
                         <FileText className="h-4 w-4" />
                       </span>
                       <span className="flex min-w-0 flex-col gap-0.5">
-                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Modelos Jurídicos</span>
+                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Modelo de Requerimentos</span>
                         <span className="text-xs font-normal text-muted-foreground">Disponível para assinantes Premium</span>
                       </span>
                     </div>
@@ -477,7 +472,7 @@ export default function Dashboard() {
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
                     ativo={categoriaSelecionada === key}
                     onClick={() => handleCategoriaClick(key)}
-                    infoTooltip={key === 'pets' ? PETS_INFO_TOOLTIP : undefined} />);
+                    onInfoClick={key === 'pets' ? () => setPetsInfoOpen(true) : undefined} />);
 
 
               })}
@@ -522,6 +517,7 @@ export default function Dashboard() {
       categoryMeta={modalCategoria ? categorias[modalCategoria] : null}
       onClose={() => setModalCategoria(null)}
     />
+    <PetsInfoModal open={petsInfoOpen} onClose={() => setPetsInfoOpen(false)} />
     </>);
 
 }

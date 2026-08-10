@@ -40,11 +40,11 @@ export default function ModelosJuridicos() {
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-300/15 dark:text-amber-200">
                 <Lock className="h-7 w-7" />
               </div>
-              <CardTitle className="text-xl text-slate-950 dark:text-slate-50">Modelos Jurídicos é Premium</CardTitle>
+              <CardTitle className="text-xl text-slate-950 dark:text-slate-50">Modelo de Requerimentos é Premium</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <p className="text-sm leading-6 text-muted-foreground">
-                Assinantes Premium acessam modelos jurídicos, visualizam os arquivos e podem baixar os documentos direto pelo Restitua.
+                Assinantes Premium acessam Modelo de Requerimentos, visualizam os arquivos e podem baixar os documentos direto pelo Restitua.
               </p>
               <Link to="/premium">
                 <Button className="bg-gradient-to-r from-slate-900 to-blue-900 text-white hover:opacity-95">
@@ -63,7 +63,7 @@ export default function ModelosJuridicos() {
       <div className="max-w-5xl mx-auto pt-6">
         <div className="mb-6">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">Premium</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-950 dark:text-slate-50">Modelos Jurídicos</h1>
+          <h1 className="mt-2 text-2xl font-bold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Arquivos de apoio para organizar solicitações, documentos e rotinas relacionadas às suas despesas.
           </p>
@@ -79,7 +79,7 @@ export default function ModelosJuridicos() {
           <Card className="shadow-lg">
             <CardContent className="flex min-h-44 flex-col items-center justify-center gap-3 text-center text-muted-foreground">
               <FileText className="h-7 w-7" />
-              <p>Nenhum modelo jurídico disponível no momento.</p>
+              <p>Nenhum Modelo de Requerimento disponível no momento.</p>
             </CardContent>
           </Card>
         ) : null}

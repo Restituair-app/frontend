@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Crown, FileSpreadsheet, Infinity, ReceiptText, ShieldCheck } from 'lucide-react';
 
+import { base44 } from '@/api/base44Client';
 import { appLogo } from '@/brandAssets';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,6 +31,25 @@ const benefits = [
 ];
 
 export default function PremiumPage() {
+  const [loadingPlan, setLoadingPlan] = useState('');
+
+  const handleCheckout = async (plan) => {
+    setLoadingPlan(plan);
+
+    try {
+      const response = await base44.billing.createCheckout({ plan });
+      window.location.href = response?.checkoutUrl || `/premium?checkout=mock&plan=${plan}&status=success`;
+    } catch (error) {
+      if (error?.status === 401) {
+        base44.auth.redirectToLogin(`${window.location.origin}/premium`);
+        return;
+      }
+
+      alert(error?.message || 'Não foi possível iniciar a assinatura.');
+      setLoadingPlan('');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="absolute inset-0 overflow-hidden">
@@ -85,6 +105,7 @@ export default function PremiumPage() {
               name: 'Plano Basic',
               subtitle: 'Para relatórios e histórico maior',
               price: 'R$ 9,90',
+              plan: 'basic',
               icon: FileSpreadsheet,
               cta: 'Assinar Basic',
               features: ['Exportar CSV/Excel', 'Histórico de até 5 anos', 'Relatórios em PDF', 'Organização das notas por categoria'],
@@ -94,6 +115,7 @@ export default function PremiumPage() {
               name: 'Plano Premium',
               subtitle: 'Para usuários intensivos',
               price: 'R$ 29,90',
+              plan: 'premium',
               icon: Crown,
               cta: 'Assinar Premium',
               features: ['Tudo do Basic', 'Notas fiscais ilimitadas', 'Histórico completo sem limite de anos', 'Memória da Nota'],
@@ -130,16 +152,17 @@ export default function PremiumPage() {
                   <Button
                     type="button"
                     className="mt-6 h-12 w-full rounded-xl bg-blue-600 py-6 text-base font-bold hover:bg-blue-700"
-                    onClick={() => undefined}
+                    disabled={Boolean(loadingPlan)}
+                    onClick={() => handleCheckout(plan.plan)}
                   >
-                    {plan.cta}
+                    {loadingPlan === plan.plan ? 'Ativando...' : plan.cta}
                   </Button>
                 </CardContent>
               </Card>
             );
           })}
           <p className="text-center text-xs leading-5 text-slate-400">
-            Os botões de assinatura ainda não iniciam pagamento. Esta página prepara a experiência de planos para a próxima etapa.
+            Ambiente em modo mock: a assinatura é ativada sem cobrança até a integração do gateway.
           </p>
         </div>
       </main>

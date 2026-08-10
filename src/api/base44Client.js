@@ -383,6 +383,21 @@ const supportTickets = {
   },
 };
 
+const billing = {
+  async createCheckout({ plan }) {
+    return request('/billing/checkout', {
+      method: 'POST',
+      body: { plan },
+    });
+  },
+
+  async cancelSubscription() {
+    return request('/billing/subscription/cancel', {
+      method: 'POST',
+    });
+  },
+};
+
 const integrations = {
   Core: {
     async UploadFile({ file }) {
@@ -426,5 +441,6 @@ export const base44 = {
   legalModels,
   auditTickets,
   supportTickets,
+  billing,
   appLogs,
 };

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { getThemePreference, resolveTheme, setThemePreference } from '@/lib/theme';
 import { getSubscriptionLabel, getSubscriptionTier, SUBSCRIPTION_TIERS } from '@/utils/subscriptionPlan';
-import { AlertTriangle, Trash2, LogOut, UserPen, CheckCircle, Moon, Sun, Crown } from 'lucide-react';
+import { AlertTriangle, Trash2, LogOut, UserPen, CheckCircle, Moon, Sun, Crown, User, X } from 'lucide-react';
 
 function formatCPF(value) {
   return value.replace(/\D/g, '').slice(0, 11)
@@ -35,6 +35,7 @@ export default function Configuracoes() {
   const [sucessoCadastro, setSucessoCadastro] = useState(false);
   const [themeMode, setThemeMode] = useState('light');
   const [currentUser, setCurrentUser] = useState(null);
+  const [billingLoading, setBillingLoading] = useState('');
 
   useEffect(() => {
     base44.auth.me().then((me) => {
@@ -98,6 +99,45 @@ export default function Configuracoes() {
     setThemeMode(nextTheme);
   };
 
+  const handleCheckout = async (plan) => {
+    setBillingLoading(plan);
+
+    try {
+      const response = await base44.billing.createCheckout({ plan });
+      if (response?.user) {
+        setCurrentUser(response.user);
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      }
+      if (response?.checkoutUrl) {
+        window.location.href = response.checkoutUrl;
+      }
+    } catch (error) {
+      alert(error?.message || 'Não foi possível iniciar a assinatura.');
+    } finally {
+      setBillingLoading('');
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    const confirmed = window.confirm('Deseja cancelar a renovação do plano? O acesso fica ativo até o fim do período atual.');
+    if (!confirmed) return;
+
+    setBillingLoading('cancel');
+
+    try {
+      const response = await base44.billing.cancelSubscription();
+      if (response?.user) {
+        setCurrentUser(response.user);
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      }
+      alert(response?.message || 'Cancelamento agendado com sucesso.');
+    } catch (error) {
+      alert(error?.message || 'Não foi possível cancelar o plano.');
+    } finally {
+      setBillingLoading('');
+    }
+  };
+
   const subscriptionTier = getSubscriptionTier(currentUser);
   const subscriptionLabel = getSubscriptionLabel(currentUser);
   const subscriptionDescription = {
@@ -144,6 +184,73 @@ export default function Configuracoes() {
                 {subscriptionLabel}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">{subscriptionDescription}</p>
+              {currentUser?.subscriptionStatus === 'scheduled_cancel' && (
+                <p className="mt-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                  Cancelamento agendado. Seu acesso permanece ativo até o fim do período.
+                </p>
+              )}
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                {subscriptionTier === SUBSCRIPTION_TIERS.FREE && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2 border-blue-300 bg-transparent text-blue-700 hover:bg-blue-50 hover:text-blue-800 dark:border-blue-400/40 dark:text-blue-200 dark:hover:bg-blue-950/40"
+                      disabled={Boolean(billingLoading)}
+                      onClick={() => handleCheckout(SUBSCRIPTION_TIERS.BASIC)}
+                    >
+                      <User className="h-4 w-4" />
+                      {billingLoading === SUBSCRIPTION_TIERS.BASIC ? 'Ativando...' : 'Assinar Basic'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2 border-amber-400 bg-transparent text-amber-700 hover:bg-amber-50 hover:text-amber-800 dark:border-amber-300/50 dark:text-amber-200 dark:hover:bg-amber-950/35"
+                      disabled={Boolean(billingLoading)}
+                      onClick={() => handleCheckout(SUBSCRIPTION_TIERS.PREMIUM)}
+                    >
+                      <Crown className="h-4 w-4" />
+                      {billingLoading === SUBSCRIPTION_TIERS.PREMIUM ? 'Ativando...' : 'Assinar Premium'}
+                    </Button>
+                  </>
+                )}
+                {subscriptionTier === SUBSCRIPTION_TIERS.BASIC && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2 border-amber-400 bg-transparent text-amber-700 hover:bg-amber-50 hover:text-amber-800 dark:border-amber-300/50 dark:text-amber-200 dark:hover:bg-amber-950/35"
+                      disabled={Boolean(billingLoading)}
+                      onClick={() => handleCheckout(SUBSCRIPTION_TIERS.PREMIUM)}
+                    >
+                      <Crown className="h-4 w-4" />
+                      {billingLoading === SUBSCRIPTION_TIERS.PREMIUM ? 'Ativando...' : 'Upgrade Premium'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2 border-slate-300 bg-transparent text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      disabled={Boolean(billingLoading)}
+                      onClick={handleCancelSubscription}
+                    >
+                      <X className="h-4 w-4" />
+                      {billingLoading === 'cancel' ? 'Cancelando...' : 'Cancelar plano'}
+                    </Button>
+                  </>
+                )}
+                {subscriptionTier === SUBSCRIPTION_TIERS.PREMIUM && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-2 border-slate-300 bg-transparent text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 sm:col-span-2"
+                    disabled={Boolean(billingLoading)}
+                    onClick={handleCancelSubscription}
+                  >
+                    <X className="h-4 w-4" />
+                    {billingLoading === 'cancel' ? 'Cancelando...' : 'Cancelar plano'}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
