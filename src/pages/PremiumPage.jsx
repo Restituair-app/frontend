@@ -1,34 +1,218 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Crown, FileSpreadsheet, Infinity, ReceiptText, ShieldCheck } from 'lucide-react';
+import {
+  ArrowLeft,
+  BarChart3,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardList,
+  Crown,
+  FileSearch,
+  FileSignature,
+  FileSpreadsheet,
+  FileText,
+  HardDrive,
+  Headphones,
+  ImagePlus,
+  LockKeyhole,
+  MessageCircle,
+  ReceiptText,
+  Sparkles,
+  XCircle,
+} from 'lucide-react';
 
 import { base44 } from '@/api/base44Client';
 import { appLogo } from '@/brandAssets';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 
-const benefits = [
+const features = [
+  'Informe de restituição (PDF)',
+  'Armazenamento de notas por 1 ano',
+  'Relatório financeiro',
+  'Informe de restituição (Excel)',
+  'Armazenamento de notas até 5 anos',
+  'Adicionar memórias',
+  'Auditoria trimestral de notas restituíveis',
+  'Modelos de requerimentos',
+  'Suporte Premium',
+];
+
+const featureIcons = {
+  'Informe de restituição (PDF)': ReceiptText,
+  'Armazenamento de notas por 1 ano': CalendarClock,
+  'Relatório financeiro': BarChart3,
+  'Informe de restituição (Excel)': FileSpreadsheet,
+  'Armazenamento de notas até 5 anos': HardDrive,
+  'Adicionar memórias': ImagePlus,
+  'Auditoria trimestral de notas restituíveis': FileSearch,
+  'Modelos de requerimentos': FileSignature,
+  'Suporte Premium': MessageCircle,
+};
+
+const plans = [
   {
-    icon: Infinity,
-    title: 'Notas fiscais ilimitadas',
-    description: 'Cadastre quantas notas precisar, sem o limite diário do plano gratuito.',
+    id: 'free',
+    name: 'Free',
+    eyebrow: 'Comece agora',
+    price: 'R$ 0',
+    period: '/mês',
+    description: 'Para organizar suas notas essenciais e emitir o informe em PDF sem custo.',
+    iconCluster: [FileText, HardDrive, BarChart3],
+    aura: 'from-slate-200 via-white to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950',
+    shellGlow: 'bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.25),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.92),rgba(226,232,240,0.82))] dark:bg-[radial-gradient(circle_at_top_left,rgba(96,165,250,0.18),transparent_45%),linear-gradient(135deg,rgba(15,23,42,0.92),rgba(2,6,23,0.86))]',
+    border: 'border-slate-200/80 dark:border-white/10',
+    iconBox: 'border border-slate-400/35 bg-white/10 text-slate-800 shadow-slate-900/10 backdrop-blur dark:border-white/20 dark:bg-white/8 dark:text-slate-100',
+    featureIcon: 'bg-slate-100 text-slate-600 dark:bg-white/8 dark:text-slate-300',
+    button: 'border-slate-300 text-slate-700 hover:border-slate-500 hover:bg-slate-50/80 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10',
+    cta: 'Plano gratuito',
+    covered: [
+      'Informe de restituição (PDF)',
+      'Armazenamento de notas por 1 ano',
+      'Relatório financeiro',
+    ],
   },
   {
-    icon: FileSpreadsheet,
-    title: 'CSV/Excel no Basic',
-    description: 'Assinantes Basic exportam relatórios em CSV compatível com Excel e contadores.',
+    id: 'basic',
+    name: 'Basic',
+    eyebrow: 'Mais controle',
+    price: 'R$ 9,90',
+    period: '/mês',
+    description: 'Ideal para quem precisa exportar Excel e consultar um histórico maior de notas.',
+    iconCluster: [BarChart3, FileSpreadsheet, HardDrive],
+    aura: 'from-blue-200 via-cyan-50 to-white dark:from-blue-950 dark:via-slate-900 dark:to-cyan-950',
+    shellGlow: 'bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.34),transparent_44%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.20),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.94),rgba(219,234,254,0.78))] dark:bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.24),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(12,35,75,0.78))]',
+    border: 'border-blue-200/80 dark:border-blue-300/20',
+    iconBox: 'border border-blue-400/45 bg-white/10 text-blue-700 shadow-blue-500/10 backdrop-blur dark:border-blue-200/25 dark:bg-white/8 dark:text-blue-100',
+    featureIcon: 'bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-blue-200',
+    button: 'border-blue-500 text-blue-700 hover:bg-blue-50 dark:border-blue-300/60 dark:text-blue-100 dark:hover:bg-blue-400/10',
+    cta: 'Assinar Basic',
+    plan: 'basic',
+    covered: [
+      'Informe de restituição (PDF)',
+      'Armazenamento de notas por 1 ano',
+      'Relatório financeiro',
+      'Informe de restituição (Excel)',
+      'Armazenamento de notas até 5 anos',
+    ],
   },
   {
-    icon: ReceiptText,
-    title: 'Histórico sempre acessível',
-    description: 'Revise notas, categorias e comprovantes quando precisar montar seus relatórios.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Organização segura',
-    description: 'Seus dados continuam protegidos e vinculados somente à sua conta.',
+    id: 'premium',
+    name: 'Premium',
+    eyebrow: 'Experiência completa',
+    price: 'R$ 29,90',
+    period: '/mês',
+    description: 'Para transformar suas notas em um acervo completo, com suporte e recursos avançados.',
+    iconCluster: [Crown, FileSearch, MessageCircle],
+    aura: 'from-amber-200 via-white to-emerald-100 dark:from-amber-950 dark:via-slate-950 dark:to-emerald-950',
+    shellGlow: 'bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.34),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.22),transparent_45%),linear-gradient(135deg,rgba(255,251,235,0.96),rgba(255,255,255,0.82))] dark:bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.23),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(52,211,153,0.14),transparent_42%),linear-gradient(135deg,rgba(24,19,9,0.92),rgba(2,6,23,0.88))]',
+    border: 'border-amber-300/80 dark:border-amber-300/25',
+    iconBox: 'border border-amber-400/50 bg-white/10 text-amber-700 shadow-amber-500/10 backdrop-blur dark:border-amber-200/30 dark:bg-white/8 dark:text-amber-100',
+    featureIcon: 'bg-amber-50 text-amber-700 dark:bg-amber-300/10 dark:text-amber-200',
+    button: 'border-amber-500 text-amber-700 hover:bg-amber-50 dark:border-amber-300/70 dark:text-amber-100 dark:hover:bg-amber-300/10',
+    cta: 'Assinar Premium',
+    plan: 'premium',
+    featured: true,
+    covered: features,
   },
 ];
+
+const quickHighlights = [
+  { icon: ClipboardList, label: 'Informe pronto para declaração' },
+  { icon: HardDrive, label: 'Histórico de notas por plano' },
+  { icon: ImagePlus, label: 'Memórias para notas Premium' },
+  { icon: Headphones, label: 'Suporte dedicado no Premium' },
+];
+
+function FeatureRow({ label, enabled, iconClassName }) {
+  const Icon = featureIcons[label] || CheckCircle2;
+
+  return (
+    <li className="flex items-start gap-3 text-sm leading-5">
+      <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl ${enabled ? iconClassName : 'bg-slate-100 text-slate-300 dark:bg-white/5 dark:text-slate-600'}`}>
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <span className={enabled ? 'font-semibold text-slate-800 dark:text-slate-100' : 'font-medium text-slate-400 dark:text-slate-500'}>
+        {label}
+      </span>
+      {enabled ? (
+        <CheckCircle2 className="ml-auto mt-1 h-4 w-4 shrink-0 text-emerald-500" />
+      ) : (
+        <XCircle className="ml-auto mt-1 h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" />
+      )}
+    </li>
+  );
+}
+
+function PlanIconCluster({ icons, iconBox }) {
+  const [PrimaryIcon, SecondaryIcon, TertiaryIcon] = icons;
+
+  return (
+    <div className="relative mb-6 h-[4.35rem] w-[5.4rem]">
+      <div className="absolute inset-0 rounded-[1.7rem] bg-white/35 blur-xl dark:bg-white/8" />
+      <div className={`absolute left-0 top-1 flex h-14 w-14 items-center justify-center rounded-2xl ${iconBox} shadow-lg`}>
+        <PrimaryIcon className="h-7 w-7" />
+      </div>
+      <div className={`absolute right-1 top-0 flex h-9 w-9 items-center justify-center rounded-2xl ${iconBox} shadow-lg ring-4 ring-white/35 dark:ring-slate-950/45`}>
+        <SecondaryIcon className="h-4 w-4" />
+      </div>
+      <div className={`absolute bottom-0 right-3 flex h-8 w-8 items-center justify-center rounded-xl ${iconBox} shadow-md ring-4 ring-white/35 dark:ring-slate-950/45`}>
+        <TertiaryIcon className="h-4 w-4" />
+      </div>
+    </div>
+  );
+}
+
+function PlanCard({ plan, loadingPlan, onCheckout }) {
+  return (
+    <article className={`group relative overflow-hidden rounded-[2rem] border ${plan.border} bg-gradient-to-br ${plan.aura} p-1 shadow-[0_24px_70px_rgba(15,23,42,0.20)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_32px_90px_rgba(15,23,42,0.28)] dark:shadow-black/40`}>
+      <div className="absolute inset-x-8 -top-20 h-36 rounded-full bg-white/80 blur-3xl dark:bg-white/6" />
+      {plan.featured && (
+        <div className="absolute right-5 top-5 z-20 inline-flex items-center gap-1.5 rounded-full border border-amber-300/60 bg-amber-100/80 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-amber-800 shadow-sm dark:bg-amber-300/15 dark:text-amber-100">
+          <Sparkles className="h-3.5 w-3.5" /> Melhor valor
+        </div>
+      )}
+
+      <div className={`relative flex h-full flex-col rounded-[1.7rem] ${plan.shellGlow} p-6 backdrop-blur-xl md:p-7`}>
+        <PlanIconCluster icons={plan.iconCluster} iconBox={plan.iconBox} />
+
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">{plan.eyebrow}</p>
+        <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950 dark:text-white">{plan.name}</h2>
+        <p className="mt-3 min-h-[3rem] text-sm leading-6 text-slate-600 dark:text-slate-300">{plan.description}</p>
+
+        <div className="mt-6 flex items-end gap-1 text-slate-950 dark:text-white">
+          <span className="text-4xl font-black tracking-tight">{plan.price}</span>
+          <span className="pb-1.5 text-sm font-bold text-slate-500 dark:text-slate-400">{plan.period}</span>
+        </div>
+
+        <div className="my-6 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-white/15" />
+
+        <ul className="flex flex-1 flex-col gap-3.5">
+          {features.map((feature) => (
+            <FeatureRow
+              key={`${plan.id}-${feature}`}
+              label={feature}
+              enabled={plan.covered.includes(feature)}
+              iconClassName={plan.featureIcon}
+            />
+          ))}
+        </ul>
+
+        {plan.plan ? (
+          <button
+            type="button"
+            className={`mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border bg-transparent px-5 text-sm font-black transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${plan.button}`}
+            disabled={Boolean(loadingPlan)}
+            onClick={() => onCheckout(plan.plan)}
+          >
+            {plan.id === 'premium' ? <Crown className="h-4 w-4" /> : <LockKeyhole className="h-4 w-4" />}
+            {loadingPlan === plan.plan ? 'Ativando...' : plan.cta}
+          </button>
+        ) : (
+          <div className="mt-7 h-12" aria-hidden="true" />
+        )}
+      </div>
+    </article>
+  );
+}
 
 export default function PremiumPage() {
   const [loadingPlan, setLoadingPlan] = useState('');
@@ -51,120 +235,59 @@ export default function PremiumPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -left-20 top-24 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl" />
-        <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
+    <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_15%_10%,rgba(37,99,235,0.36),transparent_30%),radial-gradient(circle_at_85%_0%,rgba(16,185,129,0.22),transparent_30%),linear-gradient(135deg,#07111f_0%,#0f2747_42%,#111827_100%)] text-white dark:bg-slate-950">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -left-28 top-16 h-96 w-96 rounded-full bg-blue-500/25 blur-3xl" />
+        <div className="absolute right-[-10rem] top-20 h-[30rem] w-[30rem] rounded-full bg-emerald-300/16 blur-3xl" />
+        <div className="absolute bottom-[-12rem] left-1/3 h-[28rem] w-[28rem] rounded-full bg-amber-300/14 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent_82%)]" />
       </div>
 
-      <header className="relative z-10 border-b border-white/10 bg-slate-950/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={appLogo} alt="Restitua" className="h-12 w-auto object-contain" />
+      <header className="relative z-10 border-b border-white/10 bg-slate-950/35 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link to="/" className="flex items-center gap-3" aria-label="Restitua">
+            <img src={appLogo} alt="Restitua" className="h-11 w-auto object-contain" />
           </Link>
-          <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-100 hover:text-white">
+          <Link to="/dashboard" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm font-bold text-slate-100 transition hover:border-blue-300/60 hover:bg-white/12 hover:text-white">
             <ArrowLeft className="h-4 w-4" />
             Voltar ao app
           </Link>
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto grid max-w-6xl gap-10 px-6 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-        <section>
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-300/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-100">
-            <Crown className="h-4 w-4" />
-            Restitua Planos
-          </div>
-          <h1 className="max-w-3xl text-3xl font-black leading-tight md:text-5xl">
-            Mais liberdade para organizar suas notas e preparar seu Imposto de Renda.
+      <main className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:py-16">
+        <section className="mx-auto max-w-4xl text-center">
+          <h1 className="text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl">
+            Escolha o plano que acompanha o tamanho da sua organização fiscal.
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">
-            Escolha entre Basic, para liberar CSV/Excel e histórico de até 5 anos, ou Premium, para usar
-            recursos avançados como notas ilimitadas, memória da nota e histórico completo.
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-300">
+            Do informe gratuito ao acompanhamento premium, cada plano foi pensado para manter suas notas, relatórios e documentos em ordem sem complicar sua rotina.
           </p>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {benefits.map((benefit) => {
-              const Icon = benefit.icon;
-              return (
-                <div key={benefit.title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15 text-blue-200">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h2 className="text-sm font-bold text-white">{benefit.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">{benefit.description}</p>
-                </div>
-              );
-            })}
-          </div>
         </section>
 
-        <div className="grid gap-5">
-          {[
-            {
-              name: 'Plano Basic',
-              subtitle: 'Para relatórios e histórico maior',
-              price: 'R$ 9,90',
-              plan: 'basic',
-              icon: FileSpreadsheet,
-              cta: 'Assinar Basic',
-              features: ['Exportar CSV/Excel', 'Histórico de até 5 anos', 'Relatórios em PDF', 'Organização das notas por categoria'],
-              highlight: false,
-            },
-            {
-              name: 'Plano Premium',
-              subtitle: 'Para usuários intensivos',
-              price: 'R$ 29,90',
-              plan: 'premium',
-              icon: Crown,
-              cta: 'Assinar Premium',
-              features: ['Tudo do Basic', 'Notas fiscais ilimitadas', 'Histórico completo sem limite de anos', 'Memória da Nota'],
-              highlight: true,
-            },
-          ].map((plan) => {
-            const Icon = plan.icon;
+        <section className="mt-9 grid gap-3 rounded-[2rem] border border-white/10 bg-white/[0.07] p-3 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4">
+          {quickHighlights.map((item) => {
+            const Icon = item.icon;
             return (
-              <Card key={plan.name} className={`border-white/10 bg-white text-slate-950 shadow-2xl shadow-blue-950/30 ${plan.highlight ? 'ring-2 ring-blue-500' : ''}`}>
-                <CardContent className="p-7 md:p-8">
-                  <div className="mb-6 flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-700">{plan.name}</p>
-                      <h2 className="mt-2 text-2xl font-black">{plan.subtitle}</h2>
-                      <p className="mt-2 text-3xl font-black text-slate-950">{plan.price}<span className="text-sm font-semibold text-slate-500">/mês</span></p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
-                      <Icon className="h-6 w-6" />
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl bg-slate-50 p-5">
-                    <p className="text-sm font-semibold text-slate-500">Inclui</p>
-                    <div className="mt-4 space-y-3">
-                      {plan.features.map((item) => (
-                        <div key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-800">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    className="mt-6 h-12 w-full rounded-xl bg-blue-600 py-6 text-base font-bold hover:bg-blue-700"
-                    disabled={Boolean(loadingPlan)}
-                    onClick={() => handleCheckout(plan.plan)}
-                  >
-                    {loadingPlan === plan.plan ? 'Ativando...' : plan.cta}
-                  </Button>
-                </CardContent>
-              </Card>
+              <div key={item.label} className="flex items-center gap-3 rounded-3xl bg-white/[0.08] px-4 py-3 ring-1 ring-white/8">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400/25 to-emerald-300/15 text-blue-100 ring-1 ring-white/10">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="text-sm font-bold text-slate-100">{item.label}</span>
+              </div>
             );
           })}
-          <p className="text-center text-xs leading-5 text-slate-400">
-            Ambiente em modo mock: a assinatura é ativada sem cobrança até a integração do gateway.
-          </p>
-        </div>
+        </section>
+
+        <section className="mt-10 grid gap-6 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <PlanCard key={plan.id} plan={plan} loadingPlan={loadingPlan} onCheckout={handleCheckout} />
+          ))}
+        </section>
+
+        <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-5 text-slate-400">
+          Ambiente em modo mock: Basic e Premium são ativados sem cobrança até a integração definitiva do gateway de pagamento.
+        </p>
       </main>
     </div>
   );
