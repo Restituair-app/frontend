@@ -398,6 +398,9 @@ export default function LandingPage() {
           <span className="text-white font-semibold">Restitua</span>
         </div>
         <p>© {new Date().getFullYear()} Restitua. Todos os direitos reservados.</p>
+        <p className="mt-2 text-xs text-slate-600">
+          Restitua Soluções Ltda. · CNPJ 53.176.637/0001-08
+        </p>
       </footer>
       <LandingDeductionModal
         categoryKey={selectedDeduction}
