@@ -368,9 +368,6 @@ export default function PremiumPage() {
           ))}
         </section>
 
-        <p className="mx-auto mt-3 max-w-2xl text-center text-[11px] leading-4 text-slate-500 md:mt-8 md:text-xs md:leading-5 md:text-slate-400">
-          Ambiente em modo mock: Basic e Premium são ativados sem cobrança até a integração definitiva do gateway de pagamento.
-        </p>
       </main>
 
       <CouponCheckoutModal
