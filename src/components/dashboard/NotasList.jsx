@@ -19,6 +19,13 @@ import { getWarrantyStatus } from '@/utils/warranty';
 import { canDownloadIndividualNota } from '@/utils/subscriptionPlan';
 
 const isPdfUrl = (url) => String(url || '').split('?')[0].toLowerCase().endsWith('.pdf');
+const MEMORY_PAGE_SIZE = 5;
+
+const getNotaCreatedDate = (nota) => {
+  const rawDate = nota?.createdAt || nota?.created_date || nota?.data_emissao;
+  const date = new Date(rawDate);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
 
 function ResignedDocumentLink({ src, label }) {
   const [href, setHref] = useState(src || '');
@@ -119,6 +126,13 @@ const getNotaFileName = (nota, fallback = 'nota-fiscal') => {
   return `${safeName}_${nota?.data_emissao || 'sem-data'}.${extension || 'jpg'}`;
 };
 
+const getMemoryFileName = (nota, fallback = 'memoria') => {
+  const sourceUrl = String(nota?.memoria_url || '').split('?')[0];
+  const extension = sourceUrl.includes('.') ? sourceUrl.split('.').pop() : 'jpg';
+  const safeName = (nota?.estabelecimento || fallback).replace(/[^a-zA-Z0-9]/g, '_');
+  return `memoria_${safeName}_${nota?.data_emissao || 'sem-data'}.${extension || 'jpg'}`;
+};
+
 const NotaRow = memo(function NotaRow({ nota, categorias, onView, onEdit }) {
   const cat = categorias[nota.categoria];
   const Icon = cat?.icon;
@@ -150,12 +164,6 @@ const NotaRow = memo(function NotaRow({ nota, categorias, onView, onEdit }) {
                 <span className={cn("px-2 py-0.5 rounded-full text-xs md:text-sm font-medium", cat?.cor, "bg-opacity-20")}>
                   {cat?.nome}
                 </span>
-                {nota.memoria_url ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-400/10 dark:text-amber-200">
-                    <ImagePlus className="h-3 w-3" aria-hidden="true" />
-                    Memória
-                  </span>
-                ) : null}
               </div>
             </div>
           </div>
@@ -186,39 +194,170 @@ const NotaRow = memo(function NotaRow({ nota, categorias, onView, onEdit }) {
   );
 });
 
-function MemoryGallery({ notas }) {
-  const memories = notas.filter((nota) => nota.memoria_url);
+function MemoryGallery({ notas, currentUser }) {
+  const [selectedMemory, setSelectedMemory] = useState(null);
+  const [visibleCounts, setVisibleCounts] = useState({
+    week: MEMORY_PAGE_SIZE,
+    month: MEMORY_PAGE_SIZE,
+    older: MEMORY_PAGE_SIZE,
+  });
 
-  if (memories.length === 0) {
+  const memorySections = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const sections = [
+      { key: 'week', title: 'Última semana de notas', items: [] },
+      { key: 'month', title: 'Último mês de notas', items: [] },
+      { key: 'older', title: 'Anteriores', items: [] },
+    ];
+
+    notas
+      .filter((nota) => nota.memoria_url && canDownloadIndividualNota(currentUser, nota))
+      .sort((a, b) => (getNotaCreatedDate(b)?.getTime() || 0) - (getNotaCreatedDate(a)?.getTime() || 0))
+      .forEach((nota) => {
+        const createdDate = getNotaCreatedDate(nota);
+        if (!createdDate) {
+          sections[2].items.push(nota);
+          return;
+        }
+
+        if (createdDate >= sevenDaysAgo && createdDate <= now) {
+          sections[0].items.push(nota);
+          return;
+        }
+
+        if (createdDate >= thirtyDaysAgo && createdDate < sevenDaysAgo) {
+          sections[1].items.push(nota);
+          return;
+        }
+
+        sections[2].items.push(nota);
+      });
+
+    return sections.filter((section) => section.items.length > 0);
+  }, [currentUser, notas]);
+
+  const handleDownloadMemory = useCallback(async (nota) => {
+    if (!nota?.memoria_url) {
+      toast.info('Esta memória não possui arquivo anexado.');
+      return;
+    }
+
+    if (!canDownloadIndividualNota(currentUser, nota)) {
+      toast.info('No plano Free, as memórias seguem o limite de notas enviadas nos últimos 12 meses.');
+      return;
+    }
+
+    try {
+      await downloadFromUrl(nota.memoria_url, getMemoryFileName(nota));
+      toast.success('Memória baixada com sucesso.');
+    } catch {
+      toast.error('Não foi possível baixar esta memória. Tente novamente.');
+    }
+  }, [currentUser]);
+
+  if (memorySections.length === 0) {
     return null;
   }
 
   return (
-    <Card className="mt-4 border-amber-200/70 bg-amber-50/50 shadow-md dark:border-amber-300/20 dark:bg-amber-400/5">
-      <CardContent className="p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <ImagePlus className="h-4 w-4 text-amber-600 dark:text-amber-300" />
-          <h3 className="text-sm font-semibold text-foreground">Galeria de memórias</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {memories.map((nota) => (
-            <div key={`memory-${nota.id}`} className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-              {isPdfUrl(nota.memoria_url) ? (
-                <div className="flex h-28 items-center justify-center bg-muted">
-                  <FileText className="h-8 w-8 text-blue-600" />
+    <>
+      <Card className="mt-4 border-amber-200/70 bg-amber-50/50 shadow-md dark:border-amber-300/20 dark:bg-amber-400/5">
+        <CardContent className="p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <ImagePlus className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+            <h3 className="text-sm font-semibold text-foreground">Galeria de memórias</h3>
+          </div>
+
+          <div className="space-y-5">
+            {memorySections.map((section) => {
+              const visibleItems = section.items.slice(0, visibleCounts[section.key] || MEMORY_PAGE_SIZE);
+              const hasMore = section.items.length > visibleItems.length;
+
+              return (
+                <section key={section.key} className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{section.title}</h4>
+                    <span className="text-[11px] font-semibold text-muted-foreground">{section.items.length} memória{section.items.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                    {visibleItems.map((nota) => (
+                      <button
+                        key={`memory-${section.key}-${nota.id}`}
+                        type="button"
+                        onClick={() => setSelectedMemory(nota)}
+                        className="overflow-hidden rounded-xl border border-border bg-background text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                      >
+                        {isPdfUrl(nota.memoria_url) ? (
+                          <div className="flex h-28 items-center justify-center bg-muted">
+                            <FileText className="h-8 w-8 text-blue-600" />
+                          </div>
+                        ) : (
+                          <ResignedImage src={nota.memoria_url} alt={`Memória de ${nota.estabelecimento || 'nota'}`} className="h-28 w-full object-cover" />
+                        )}
+                        <div className="p-2">
+                          <p className="truncate text-xs font-semibold text-foreground">{nota.estabelecimento || 'Nota fiscal'}</p>
+                          <p className="text-[11px] text-muted-foreground">{nota.data_emissao || '-'}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  {hasMore ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() =>
+                        setVisibleCounts((current) => ({
+                          ...current,
+                          [section.key]: (current[section.key] || MEMORY_PAGE_SIZE) + MEMORY_PAGE_SIZE,
+                        }))
+                      }
+                    >
+                      Carregar mais memórias
+                    </Button>
+                  ) : null}
+                </section>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={Boolean(selectedMemory)} onOpenChange={(open) => !open && setSelectedMemory(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              Memória da Nota
+              <Button variant="ghost" size="icon" aria-label="Fechar memória" onClick={() => setSelectedMemory(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          {selectedMemory ? (
+            <div className="space-y-4">
+              {isPdfUrl(selectedMemory.memoria_url) ? (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-border bg-muted p-8 text-center">
+                  <FileText className="mb-3 h-12 w-12 text-blue-600" />
+                  <p className="text-sm font-semibold text-foreground">Memória em PDF</p>
                 </div>
               ) : (
-                <ResignedImage src={nota.memoria_url} alt={`Memória de ${nota.estabelecimento || 'nota'}`} className="h-28 w-full object-cover" />
+                <ResignedImage src={selectedMemory.memoria_url} alt="Memória da nota" className="max-h-[70vh] w-full rounded-2xl object-contain" />
               )}
-              <div className="p-2">
-                <p className="truncate text-xs font-semibold text-foreground">{nota.estabelecimento || 'Nota fiscal'}</p>
-                <p className="text-[11px] text-muted-foreground">{nota.data_emissao || '-'}</p>
-              </div>
+              <Button className="w-full gap-2" onClick={() => handleDownloadMemory(selectedMemory)}>
+                <Download className="h-4 w-4" />
+                Baixar memória
+              </Button>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -307,7 +446,7 @@ export default function NotasList({ notas, categorias, currentUser, showMemoryGa
             </div>
           );
         })}
-        {showMemoryGallery ? <MemoryGallery notas={notas} /> : null}
+        {showMemoryGallery ? <MemoryGallery notas={notas} currentUser={currentUser} /> : null}
       </div>
 
       {/* Modal de Detalhes */}

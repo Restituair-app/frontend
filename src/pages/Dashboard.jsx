@@ -119,10 +119,12 @@ export default function Dashboard() {
   });
 
   const totalPorCategoria = {};
+  const memoriasPorCategoria = {};
   Object.keys(categorias).forEach((cat) => {
     totalPorCategoria[cat] = notasFiltradas.
     filter((n) => n.categoria === cat).
     reduce((sum, n) => sum + (n.valor_total || 0), 0);
+    memoriasPorCategoria[cat] = notasFiltradas.filter((n) => n.categoria === cat && n.memoria_url).length;
   });
 
   const totalGeral = Object.values(totalPorCategoria).reduce((sum, val) => sum + val, 0);
@@ -458,6 +460,7 @@ export default function Dashboard() {
                     cor={cat.cor}
                     total={totalPorCategoria[key]}
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
+                    memoriaCount={memoriasPorCategoria[key]}
                     ativo={categoriaSelecionada === key}
                     onClick={() => handleCategoriaClick(key)}
                     onInfoClick={() => setModalCategoria(key)} />);
@@ -485,6 +488,7 @@ export default function Dashboard() {
                     cor={cat.cor}
                     total={totalPorCategoria[key]}
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
+                    memoriaCount={memoriasPorCategoria[key]}
                     ativo={categoriaSelecionada === key}
                     onClick={() => handleCategoriaClick(key)}
                     onInfoClick={

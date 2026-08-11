@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lucide-react';
 // jsPDF and JSZip are loaded on-demand to keep the initial bundle small
@@ -50,7 +51,9 @@ const getReportYearOptions = (notas = []) => {
 export default function Relatorios() {
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
   const [mostrarInforme, setMostrarInforme] = useState(false);
+  const [anoComprovantes, setAnoComprovantes] = useState(new Date().getFullYear());
   const [mesComprovantes, setMesComprovantes] = useState(String(new Date().getMonth()));
+  const [comprovantesModalOpen, setComprovantesModalOpen] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState({ nome_completo: '', cpf: '' });
@@ -97,6 +100,12 @@ export default function Relatorios() {
       setAnoSelecionado(visibleYearOptions[0]);
     }
   }, [anoSelecionado, visibleYearOptions]);
+
+  useEffect(() => {
+    if (visibleYearOptions.length > 0 && !visibleYearOptions.includes(anoComprovantes)) {
+      setAnoComprovantes(visibleYearOptions[0]);
+    }
+  }, [anoComprovantes, visibleYearOptions]);
 
   const requireBasicExport = () => {
     if (hasBasicAccess(currentUser)) {
@@ -334,6 +343,16 @@ export default function Relatorios() {
 
   const [baixandoArquivos, setBaixandoArquivos] = useState(false);
 
+  const abrirModalComprovantes = () => {
+    if (!hasBasicAccess(currentUser)) {
+      toast.info('Baixar comprovantes em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
+      return;
+    }
+
+    setAnoComprovantes(anoSelecionado);
+    setComprovantesModalOpen(true);
+  };
+
   const downloadArquivosDedutiveis = async () => {
     if (!hasBasicAccess(currentUser)) {
       toast.info('Baixar comprovantes em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
@@ -341,10 +360,12 @@ export default function Relatorios() {
     }
 
     const selectedMonth = Number(mesComprovantes);
+    const selectedYear = Number(anoComprovantes);
 
-    const notasComImagem = notasAno.filter(
+    const notasComImagem = notas.filter(
       (n) =>
         n.imagem_url &&
+        new Date(n.data_emissao).getFullYear() === selectedYear &&
         new Date(n.data_emissao).getMonth() === selectedMonth
     );
 
@@ -359,7 +380,7 @@ export default function Relatorios() {
     try {
       const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
-      const pasta = zip.folder(`comprovantes-${anoSelecionado}-${String(selectedMonth + 1).padStart(2, '0')}`);
+      const pasta = zip.folder(`comprovantes-${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`);
       let arquivosAdicionados = 0;
 
       await Promise.all(
@@ -397,9 +418,10 @@ export default function Relatorios() {
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `comprovantes-${anoSelecionado}-${String(selectedMonth + 1).padStart(2, '0')}.zip`;
+      a.download = `comprovantes-${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}.zip`;
       a.click();
       URL.revokeObjectURL(url);
+      setComprovantesModalOpen(false);
       toast.success(`${arquivosAdicionados} comprovante${arquivosAdicionados === 1 ? '' : 's'} baixado${arquivosAdicionados === 1 ? '' : 's'}.`);
     } catch {
       toast.error('Erro ao gerar o ZIP de comprovantes. Tente novamente.');
@@ -534,17 +556,7 @@ export default function Relatorios() {
                     <Download className="w-4 h-4" />
                     Baixar informe de restituição (Excel)
                   </Button>
-                  <Select value={mesComprovantes} onValueChange={setMesComprovantes}>
-                    <SelectTrigger className="w-full sm:w-[150px] min-h-[44px] bg-background/70" aria-label="Selecionar mês dos comprovantes">
-                      <SelectValue placeholder="Mês" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {meses.map((mes, index) => (
-                        <SelectItem key={mes} value={String(index)}>{mes}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={downloadArquivosDedutiveis} disabled={baixandoArquivos} aria-label="Baixar comprovantes dedutíveis" className="gap-2 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto">
+                  <Button onClick={abrirModalComprovantes} disabled={baixandoArquivos} aria-label="Baixar comprovantes dedutíveis" className="gap-2 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto">
                     {baixandoArquivos ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderDown className="w-4 h-4" />}
                     {baixandoArquivos ? 'Baixando...' : 'Baixar Comprovantes'}
                   </Button>
@@ -656,6 +668,63 @@ export default function Relatorios() {
                 </div>
               </CardContent>
             </Card>
+
+            <Dialog open={comprovantesModalOpen} onOpenChange={(open) => !baixandoArquivos && setComprovantesModalOpen(open)}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Baixar comprovantes</DialogTitle>
+                  <DialogDescription>
+                    Selecione o ano e o mês das notas que deseja baixar em ZIP.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-2">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-semibold text-foreground" htmlFor="ano-comprovantes">
+                      Ano
+                    </label>
+                    <Select value={String(anoComprovantes)} onValueChange={(value) => setAnoComprovantes(Number(value))}>
+                      <SelectTrigger id="ano-comprovantes" className="min-h-[44px] bg-background/70">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {visibleYearOptions.map((ano) => (
+                          <SelectItem key={ano} value={String(ano)}>
+                            {ano}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <label className="text-sm font-semibold text-foreground" htmlFor="mes-comprovantes">
+                      Mês
+                    </label>
+                    <Select value={mesComprovantes} onValueChange={setMesComprovantes}>
+                      <SelectTrigger id="mes-comprovantes" className="min-h-[44px] bg-background/70">
+                        <SelectValue placeholder="Selecione o mês" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {meses.map((mes, index) => (
+                          <SelectItem key={mes} value={String(index)}>{mes}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setComprovantesModalOpen(false)} disabled={baixandoArquivos}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={downloadArquivosDedutiveis} disabled={baixandoArquivos} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+                    {baixandoArquivos ? <Loader2 className="h-4 w-4 animate-spin" /> : <FolderDown className="h-4 w-4" />}
+                    {baixandoArquivos ? 'Baixando...' : 'Baixar ZIP'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </>
         )}
 
