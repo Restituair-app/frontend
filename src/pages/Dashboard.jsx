@@ -41,12 +41,13 @@ import usePullToRefresh from '../hooks/usePullToRefresh';
 import CategoryCard from '../components/dashboard/CategoryCard';
 import CategoryInfoModal from '../components/dashboard/CategoryInfoModal';
 import PetsInfoModal from '../components/dashboard/PetsInfoModal';
+import WarrantyInfoModal from '@/components/common/WarrantyInfoModal';
 import NotasList from '../components/dashboard/NotasList';
 import { Skeleton } from '@/components/ui/skeleton';
 import { appLogo } from '@/brandAssets';
 import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
 import { getVisibleYearOptions } from '@/utils/yearOptions';
-import { hasPremiumAccess } from '@/utils/subscriptionPlan';
+import { hasPremiumAccess, isFreeYearLocked } from '@/utils/subscriptionPlan';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
@@ -72,6 +73,7 @@ export default function Dashboard() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [modalCategoria, setModalCategoria] = useState(null);
   const [petsInfoOpen, setPetsInfoOpen] = useState(false);
+  const [warrantyInfoOpen, setWarrantyInfoOpen] = useState(false);
   const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
   const [userEmail, setUserEmail] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -107,6 +109,7 @@ export default function Dashboard() {
   }, [anoFiltro, visibleYearOptions]);
 
   const isPremium = hasPremiumAccess(currentUser);
+  const lockedYearMessage = 'Ano bloqueado no plano Free. Assine Basic ou Premium para acessar este histórico.';
 
   const notasFiltradas = notas.filter((nota) => {
     const anoNota = new Date(nota.data_emissao).getFullYear();
@@ -168,13 +171,25 @@ export default function Dashboard() {
                 <Upload className="w-4 h-4" />
               </Button>
             </Link>
-            <Select value={String(anoFiltro)} onValueChange={(v) => setAnoFiltro(Number(v))}>
+            <Select
+              value={String(anoFiltro)}
+              onValueChange={(v) => {
+                const nextYear = Number(v);
+                if (isFreeYearLocked(currentUser, nextYear)) {
+                  alert(lockedYearMessage);
+                  return;
+                }
+                setAnoFiltro(nextYear);
+              }}
+            >
               <SelectTrigger className="w-[92px] min-h-[40px] text-sm font-medium" aria-label="Selecionar ano">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {visibleYearOptions.map((ano) => (
-                  <SelectItem key={ano} value={String(ano)}>{ano}</SelectItem>
+                  <SelectItem key={ano} value={String(ano)} disabled={isFreeYearLocked(currentUser, ano)}>
+                    {isFreeYearLocked(currentUser, ano) ? `🔒 ${ano}` : ano}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -287,7 +302,7 @@ export default function Dashboard() {
                         </span>
                         <span className="flex min-w-0 flex-col gap-0.5">
                           <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</span>
-                          <span className="text-xs font-normal text-muted-foreground">Visualize e baixe documentos de apoio</span>
+                          <span className="text-xs font-normal text-muted-foreground">Visualize e baixe documentos jurídicos de apoio</span>
                         </span>
                       </Button>
                     </Link>
@@ -472,7 +487,13 @@ export default function Dashboard() {
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
                     ativo={categoriaSelecionada === key}
                     onClick={() => handleCategoriaClick(key)}
-                    onInfoClick={key === 'pets' ? () => setPetsInfoOpen(true) : undefined} />);
+                    onInfoClick={
+                      key === 'pets'
+                        ? () => setPetsInfoOpen(true)
+                        : key === 'eletronicos'
+                          ? () => setWarrantyInfoOpen(true)
+                          : undefined
+                    } />);
 
 
               })}
@@ -506,7 +527,7 @@ export default function Dashboard() {
             )}
             </div> :
 
-          <NotasList notas={notasFiltradas} categorias={categorias} />
+          <NotasList notas={notasFiltradas} categorias={categorias} currentUser={currentUser} showMemoryGallery={!categoriaSelecionada} />
           }
         </div>
       </div>
@@ -518,6 +539,7 @@ export default function Dashboard() {
       onClose={() => setModalCategoria(null)}
     />
     <PetsInfoModal open={petsInfoOpen} onClose={() => setPetsInfoOpen(false)} />
+    <WarrantyInfoModal open={warrantyInfoOpen} onClose={() => setWarrantyInfoOpen(false)} />
     </>);
 
 }

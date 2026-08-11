@@ -33,6 +33,35 @@ export function hasPremiumAccess(userOrIsPremium) {
   return getSubscriptionTier(userOrIsPremium) === SUBSCRIPTION_TIERS.PREMIUM;
 }
 
+export function isFreeYearLocked(userOrIsPremium, year) {
+  if (getSubscriptionTier(userOrIsPremium) !== SUBSCRIPTION_TIERS.FREE) {
+    return false;
+  }
+
+  const currentYear = new Date().getFullYear();
+  return Number(year) < currentYear - 1;
+}
+
+export function canDownloadIndividualNota(userOrIsPremium, nota) {
+  if (hasBasicAccess(userOrIsPremium)) {
+    return true;
+  }
+
+  const createdAt = nota?.createdAt || nota?.created_date;
+  if (!createdAt) {
+    return false;
+  }
+
+  const createdDate = new Date(createdAt);
+  if (Number.isNaN(createdDate.getTime())) {
+    return false;
+  }
+
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 12);
+  return createdDate >= startDate;
+}
+
 export function getSubscriptionLabel(userOrIsPremium) {
   const tier = getSubscriptionTier(userOrIsPremium);
 

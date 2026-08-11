@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ClipboardList,
   Crown,
+  Download,
   FileSearch,
   FileSignature,
   FileSpreadsheet,
@@ -28,6 +29,7 @@ const features = [
   'Informe de restituição (PDF)',
   'Armazenamento de notas por 1 ano',
   'Relatório financeiro',
+  'Download das notas enviadas',
   'Informe de restituição (Excel)',
   'Armazenamento de notas até 5 anos',
   'Adicionar memórias',
@@ -40,6 +42,7 @@ const featureIcons = {
   'Informe de restituição (PDF)': ReceiptText,
   'Armazenamento de notas por 1 ano': CalendarClock,
   'Relatório financeiro': BarChart3,
+  'Download das notas enviadas': Download,
   'Informe de restituição (Excel)': FileSpreadsheet,
   'Armazenamento de notas até 5 anos': HardDrive,
   'Adicionar memórias': ImagePlus,
@@ -88,8 +91,8 @@ const plans = [
     plan: 'basic',
     covered: [
       'Informe de restituição (PDF)',
-      'Armazenamento de notas por 1 ano',
       'Relatório financeiro',
+      'Download das notas enviadas',
       'Informe de restituição (Excel)',
       'Armazenamento de notas até 5 anos',
     ],
@@ -111,14 +114,24 @@ const plans = [
     cta: 'Assinar Premium',
     plan: 'premium',
     featured: true,
-    covered: features,
+    covered: [
+      'Informe de restituição (PDF)',
+      'Relatório financeiro',
+      'Download das notas enviadas',
+      'Informe de restituição (Excel)',
+      'Armazenamento de notas até 5 anos',
+      'Adicionar memórias',
+      'Auditoria trimestral de notas restituíveis',
+      'Modelos de requerimentos',
+      'Suporte Premium',
+    ],
   },
 ];
 
 const quickHighlights = [
-  { icon: ClipboardList, label: 'Informe pronto para declaração' },
+  { icon: ClipboardList, label: 'Informe de restituição pronto para declaração de IR' },
   { icon: HardDrive, label: 'Histórico de notas por plano' },
-  { icon: ImagePlus, label: 'Memórias para notas Premium' },
+  { icon: ImagePlus, label: 'Adicione fotos para lembrar de suas despesas' },
   { icon: Headphones, label: 'Suporte dedicado no Premium' },
 ];
 
@@ -162,6 +175,10 @@ function PlanIconCluster({ icons, iconBox }) {
 }
 
 function PlanCard({ plan, loadingPlan, onCheckout }) {
+  const visibleFeatures = plan.id === 'free'
+    ? features
+    : features.filter((feature) => feature !== 'Armazenamento de notas por 1 ano');
+
   return (
     <article className={`group relative overflow-hidden rounded-[2rem] border ${plan.border} bg-gradient-to-br ${plan.aura} p-1 shadow-[0_24px_70px_rgba(15,23,42,0.20)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_32px_90px_rgba(15,23,42,0.28)] dark:shadow-black/40`}>
       <div className="absolute inset-x-8 -top-20 h-36 rounded-full bg-white/80 blur-3xl dark:bg-white/6" />
@@ -186,7 +203,7 @@ function PlanCard({ plan, loadingPlan, onCheckout }) {
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-white/15" />
 
         <ul className="flex flex-1 flex-col gap-3.5">
-          {features.map((feature) => (
+          {visibleFeatures.map((feature) => (
             <FeatureRow
               key={`${plan.id}-${feature}`}
               label={feature}
@@ -322,10 +339,10 @@ export default function PremiumPage() {
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-16">
         <section className="mx-auto max-w-4xl text-center">
           <h1 className="text-xl font-medium leading-tight tracking-tight text-white md:text-5xl">
-            Escolha o plano que acompanha o tamanho da sua organização fiscal.
+            Escolha seu Plano
           </h1>
           <p className="mx-auto mt-2 max-w-2xl text-xs leading-5 text-slate-300 md:mt-5 md:text-base md:leading-7">
-            Do informe gratuito ao acompanhamento premium, cada plano foi pensado para manter suas notas, relatórios e documentos em ordem sem complicar sua rotina.
+            Do informe gratuito ao acompanhamento premium, cada plano foi pensado para aumentar ao máximo sua restituição de imposto de renda.
           </p>
         </section>
 

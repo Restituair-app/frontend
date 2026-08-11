@@ -173,6 +173,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img src={appLogo} alt="Restitua logo" className="h-14 w-auto object-contain" />
+            <span className="text-base font-bold tracking-tight text-slate-900">Restitua</span>
           </div>
           {/* Links centralizados - desktop */}
           <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
@@ -212,9 +213,9 @@ export default function LandingPage() {
           <div className="w-full md:w-2/5 flex-shrink-0 flex flex-col items-start gap-3">
             <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white">
               <img
-                src="https://media.base44.com/images/public/698f3d91171f2c022cbab857/f25f6a037_semnome2.png"
+                src={appLogo}
                 alt="Restitua App"
-                className="w-full h-full object-cover" />
+                className="w-full h-full object-contain bg-white" />
               
             </div>
             <span className="text-white text-sm font-semibold">Informe de Restituição sem complicação</span>

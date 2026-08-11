@@ -10,7 +10,7 @@ import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lu
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { appLogo } from '@/brandAssets';
-import { hasBasicAccess } from '@/utils/subscriptionPlan';
+import { hasBasicAccess, isFreeYearLocked } from '@/utils/subscriptionPlan';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', cor: '#ef4444' },
@@ -34,7 +34,6 @@ const categorias = {
 
 const CATEGORIAS_DEDUTIVEIS = ['saude', 'dentista', 'educacao', 'previdencia_privada', 'pensao_alimenticia', 'dependentes'];
 const DEFAULT_MIN_YEAR = 2022;
-const FREE_COMPROVANTES_HISTORY_MONTHS = 12;
 const BASIC_EXPORT_MESSAGE = 'CSV/Excel está disponível nos planos Basic e Premium. No plano gratuito você pode exportar o relatório em PDF.';
 
 const getYearFromNota = (nota) => {
@@ -48,25 +47,10 @@ const getReportYearOptions = (notas = []) => {
   return Array.from(years).filter((year) => year >= DEFAULT_MIN_YEAR).sort((a, b) => b - a);
 };
 
-const getFreeComprovantesStartDate = () => {
-  const start = new Date();
-  start.setMonth(start.getMonth() - FREE_COMPROVANTES_HISTORY_MONTHS);
-  return start;
-};
-
-const wasNotaUploadedAfter = (nota, startDate) => {
-  const createdAt = nota?.createdAt || nota?.created_date;
-  if (!createdAt) {
-    return false;
-  }
-
-  const createdDate = new Date(createdAt);
-  return Number.isFinite(createdDate.getTime()) && createdDate >= startDate;
-};
-
 export default function Relatorios() {
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
   const [mostrarInforme, setMostrarInforme] = useState(false);
+  const [mesComprovantes, setMesComprovantes] = useState(String(new Date().getMonth()));
   const [userEmail, setUserEmail] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState({ nome_completo: '', cpf: '' });
@@ -175,16 +159,19 @@ export default function Relatorios() {
     };
   }).filter((m) => m.total > 0);
 
+  const getRestituivelLabel = (categoria) => (CATEGORIAS_DEDUTIVEIS.includes(categoria) ? 'Sim' : 'Não');
+
   const exportarCSV = () => {
     if (!requireBasicExport()) {
       return;
     }
 
-    const headers = ['Data', 'Estabelecimento', 'Categoria', 'Valor', 'CNPJ', 'Número Nota'];
+    const headers = ['Data', 'Estabelecimento', 'Categoria', 'Restituível', 'Valor', 'CNPJ', 'Número Nota'];
     const rows = notasAno.map((nota) => [
     nota.data_emissao,
     nota.estabelecimento || '',
     categorias[nota.categoria]?.nome || nota.categoria,
+    getRestituivelLabel(nota.categoria),
     nota.valor_total.toFixed(2),
     nota.cnpj || '',
     nota.numero_nota || '']
@@ -243,8 +230,8 @@ export default function Relatorios() {
       doc.text(`CPF: ${userData.cpf}`, 40, userData.nome_completo ? 31 : 26);
     }
 
-    const cols = ['Mes', 'Saude', 'Dentista', 'Educacao', 'Prev.Privada', 'Pensao', 'Dependentes', 'Total', 'Notas'];
-    const colW = [28, 26, 24, 24, 28, 24, 28, 28, 14];
+    const cols = ['Mes', 'Saude', 'Dentista', 'Educacao', 'Prev.Privada', 'Pensao', 'Dependentes', 'Total', 'Notas', 'Restituivel'];
+    const colW = [24, 24, 22, 22, 26, 22, 25, 25, 13, 23];
     const startX = 14;
     const rowH = 8;
     let y = 38;
@@ -274,7 +261,7 @@ export default function Relatorios() {
       drawRow(
         [m.mes, `R$${m.saude.toFixed(2)}`, `R$${m.dentista.toFixed(2)}`, `R$${m.educacao.toFixed(2)}`,
         `R$${m.previdencia.toFixed(2)}`, `R$${m.pensao.toFixed(2)}`, `R$${m.dependentes.toFixed(2)}`,
-        `R$${m.total.toFixed(2)}`, String(m.quantidade)],
+        `R$${m.total.toFixed(2)}`, String(m.quantidade), 'Sim'],
         bg[0], bg[1], bg[2], 60, 60, 60, false
       );
     });
@@ -289,7 +276,7 @@ export default function Relatorios() {
       `R$${dadosPorMes.reduce((s, m) => s + m.pensao, 0).toFixed(2)}`,
       `R$${dadosPorMes.reduce((s, m) => s + m.dependentes, 0).toFixed(2)}`,
       `R$${dedutiveis.toFixed(2)}`,
-      String(dadosPorMes.reduce((s, m) => s + m.quantidade, 0))],
+      String(dadosPorMes.reduce((s, m) => s + m.quantidade, 0)), 'Sim'],
       237, 233, 254, 30, 30, 30, true
     );
 
@@ -312,7 +299,7 @@ export default function Relatorios() {
     const header3 = `Nome: ${userData.nome_completo || ''}    CPF: ${userData.cpf || ''}`;
     const blank = '';
 
-    const cols = ['Mês','CNPJ/CPF','Nome/Razão Social','Tipo da despesa dedutível','Valor'];
+    const cols = ['Mês','CNPJ/CPF','Nome/Razão Social','Tipo da despesa dedutível','Restituível','Valor'];
 
     const rows = notasDedutiveis.map((nota) => {
       const d = new Date(nota.data_emissao);
@@ -322,6 +309,7 @@ export default function Relatorios() {
         nota.cnpj || '',
         nota.estabelecimento || '',
         categorias[nota.categoria]?.nome || nota.categoria,
+        getRestituivelLabel(nota.categoria),
         `R$ ${nota.valor_total?.toFixed(2) || '0.00'}`
       ];
     });
@@ -347,20 +335,22 @@ export default function Relatorios() {
   const [baixandoArquivos, setBaixandoArquivos] = useState(false);
 
   const downloadArquivosDedutiveis = async () => {
-    const isBasicOrPremium = hasBasicAccess(currentUser);
-    const freeStartDate = getFreeComprovantesStartDate();
+    if (!hasBasicAccess(currentUser)) {
+      toast.info('Baixar comprovantes em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
+      return;
+    }
+
+    const selectedMonth = Number(mesComprovantes);
 
     const notasComImagem = notasAno.filter(
       (n) =>
         n.imagem_url &&
-        (isBasicOrPremium || wasNotaUploadedAfter(n, freeStartDate))
+        new Date(n.data_emissao).getMonth() === selectedMonth
     );
 
     if (notasComImagem.length === 0) {
       toast.info(
-        isBasicOrPremium
-          ? 'Nenhuma nota com arquivo anexado encontrada para este ano.'
-          : 'No plano gratuito, o download de comprovantes libera apenas notas enviadas nos últimos 12 meses.'
+        'Nenhuma nota com arquivo anexado encontrada para o mês selecionado.'
       );
       return;
     }
@@ -369,7 +359,7 @@ export default function Relatorios() {
     try {
       const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
-      const pasta = zip.folder(`comprovantes-${anoSelecionado}`);
+      const pasta = zip.folder(`comprovantes-${anoSelecionado}-${String(selectedMonth + 1).padStart(2, '0')}`);
       let arquivosAdicionados = 0;
 
       await Promise.all(
@@ -407,7 +397,7 @@ export default function Relatorios() {
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `comprovantes-${anoSelecionado}.zip`;
+      a.download = `comprovantes-${anoSelecionado}-${String(selectedMonth + 1).padStart(2, '0')}.zip`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`${arquivosAdicionados} comprovante${arquivosAdicionados === 1 ? '' : 's'} baixado${arquivosAdicionados === 1 ? '' : 's'}.`);
@@ -444,13 +434,25 @@ export default function Relatorios() {
               </Button>
 
               <div className="flex w-full md:w-auto flex-col gap-2 sm:flex-row sm:items-center">
-                <Select value={String(anoSelecionado)} onValueChange={(v) => setAnoSelecionado(Number(v))}>
+                <Select
+                  value={String(anoSelecionado)}
+                  onValueChange={(v) => {
+                    const nextYear = Number(v);
+                    if (isFreeYearLocked(currentUser, nextYear)) {
+                      toast.info('Ano bloqueado no plano Free. Assine Basic ou Premium para acessar este histórico.');
+                      return;
+                    }
+                    setAnoSelecionado(nextYear);
+                  }}
+                >
                   <SelectTrigger className="w-full sm:w-[120px] min-h-[44px] bg-background/70" aria-label="Selecionar ano">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {visibleYearOptions.map((ano) => (
-                      <SelectItem key={ano} value={String(ano)}>{ano}</SelectItem>
+                      <SelectItem key={ano} value={String(ano)} disabled={isFreeYearLocked(currentUser, ano)}>
+                        {isFreeYearLocked(currentUser, ano) ? `🔒 ${ano}` : ano}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -524,14 +526,24 @@ export default function Relatorios() {
               <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <CardTitle className="text-foreground text-lg">Despesas Dedutíveis por Mês</CardTitle>
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <Button onClick={exportarInformePDF} aria-label="Exportar PDF" className="gap-2 min-h-[44px] bg-red-600 hover:bg-red-700 w-full sm:w-auto">
+                  <Button onClick={exportarInformePDF} aria-label="Baixar informe de restituição em PDF" className="gap-2 min-h-[44px] bg-red-600 hover:bg-red-700 w-full sm:w-auto">
                     <FileDown className="w-4 h-4" />
-                    Exportar PDF
+                    Baixar informe de restituição (PDF)
                   </Button>
-                  <Button onClick={exportarInformeRestituicao} aria-label="Exportar CSV" className="gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
+                  <Button onClick={exportarInformeRestituicao} aria-label="Baixar informe de restituição em Excel" className="gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
                     <Download className="w-4 h-4" />
-                    Exportar CSV
+                    Baixar informe de restituição (Excel)
                   </Button>
+                  <Select value={mesComprovantes} onValueChange={setMesComprovantes}>
+                    <SelectTrigger className="w-full sm:w-[150px] min-h-[44px] bg-background/70" aria-label="Selecionar mês dos comprovantes">
+                      <SelectValue placeholder="Mês" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {meses.map((mes, index) => (
+                        <SelectItem key={mes} value={String(index)}>{mes}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button onClick={downloadArquivosDedutiveis} disabled={baixandoArquivos} aria-label="Baixar comprovantes dedutíveis" className="gap-2 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto">
                     {baixandoArquivos ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderDown className="w-4 h-4" />}
                     {baixandoArquivos ? 'Baixando...' : 'Baixar Comprovantes'}

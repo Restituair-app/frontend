@@ -3,7 +3,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Building2, Calendar, Receipt, X, Pencil, ChevronDown, ChevronRight, FileText } from 'lucide-react';
+import { Eye, Building2, Calendar, Receipt, X, Pencil, ChevronDown, ChevronRight, FileText, Download, ImagePlus } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
   Dialog,
@@ -15,6 +16,7 @@ import EditNotaModal from './EditNotaModal';
 import ResignedImage from '@/components/common/ResignedImage';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { getWarrantyStatus } from '@/utils/warranty';
+import { canDownloadIndividualNota } from '@/utils/subscriptionPlan';
 
 const isPdfUrl = (url) => String(url || '').split('?')[0].toLowerCase().endsWith('.pdf');
 
@@ -86,6 +88,37 @@ const MesHeader = memo(function MesHeader({ chave, notasDoMes, oculto, toggleMes
   );
 });
 
+const downloadFromUrl = async (url, fileName) => {
+  const signedUrl = (await resignS3UrlOnClient(url)) || url;
+  let response = await fetch(signedUrl);
+
+  if (!response.ok) {
+    const refreshedUrl = await resignS3UrlOnClient(signedUrl, true);
+    if (refreshedUrl) {
+      response = await fetch(refreshedUrl);
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error('Não foi possível baixar o arquivo.');
+  }
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(objectUrl);
+};
+
+const getNotaFileName = (nota, fallback = 'nota-fiscal') => {
+  const sourceUrl = String(nota?.imagem_url || '').split('?')[0];
+  const extension = sourceUrl.includes('.') ? sourceUrl.split('.').pop() : 'jpg';
+  const safeName = (nota?.estabelecimento || fallback).replace(/[^a-zA-Z0-9]/g, '_');
+  return `${safeName}_${nota?.data_emissao || 'sem-data'}.${extension || 'jpg'}`;
+};
+
 const NotaRow = memo(function NotaRow({ nota, categorias, onView, onEdit }) {
   const cat = categorias[nota.categoria];
   const Icon = cat?.icon;
@@ -117,6 +150,12 @@ const NotaRow = memo(function NotaRow({ nota, categorias, onView, onEdit }) {
                 <span className={cn("px-2 py-0.5 rounded-full text-xs md:text-sm font-medium", cat?.cor, "bg-opacity-20")}>
                   {cat?.nome}
                 </span>
+                {nota.memoria_url ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-400/10 dark:text-amber-200">
+                    <ImagePlus className="h-3 w-3" aria-hidden="true" />
+                    Memória
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -147,13 +186,67 @@ const NotaRow = memo(function NotaRow({ nota, categorias, onView, onEdit }) {
   );
 });
 
-export default function NotasList({ notas, categorias }) {
+function MemoryGallery({ notas }) {
+  const memories = notas.filter((nota) => nota.memoria_url);
+
+  if (memories.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card className="mt-4 border-amber-200/70 bg-amber-50/50 shadow-md dark:border-amber-300/20 dark:bg-amber-400/5">
+      <CardContent className="p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <ImagePlus className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+          <h3 className="text-sm font-semibold text-foreground">Galeria de memórias</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {memories.map((nota) => (
+            <div key={`memory-${nota.id}`} className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+              {isPdfUrl(nota.memoria_url) ? (
+                <div className="flex h-28 items-center justify-center bg-muted">
+                  <FileText className="h-8 w-8 text-blue-600" />
+                </div>
+              ) : (
+                <ResignedImage src={nota.memoria_url} alt={`Memória de ${nota.estabelecimento || 'nota'}`} className="h-28 w-full object-cover" />
+              )}
+              <div className="p-2">
+                <p className="truncate text-xs font-semibold text-foreground">{nota.estabelecimento || 'Nota fiscal'}</p>
+                <p className="text-[11px] text-muted-foreground">{nota.data_emissao || '-'}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function NotasList({ notas, categorias, currentUser, showMemoryGallery = false }) {
   const [notaSelecionada, setNotaSelecionada] = useState(null);
   const [notaEditando, setNotaEditando] = useState(null);
   const [mesesOcultos, setMesesOcultos] = useState({});
 
   const handleView = useCallback((nota) => setNotaSelecionada(nota), []);
   const handleEdit = useCallback((nota) => setNotaEditando(nota), []);
+  const handleDownloadNota = useCallback(async (nota) => {
+    if (!nota?.imagem_url) {
+      toast.info('Esta nota não possui arquivo anexado.');
+      return;
+    }
+
+    if (!canDownloadIndividualNota(currentUser, nota)) {
+      toast.info('No plano Free, o download individual libera apenas notas enviadas nos últimos 12 meses.');
+      return;
+    }
+
+    try {
+      await downloadFromUrl(nota.imagem_url, getNotaFileName(nota));
+      toast.success('Nota baixada com sucesso.');
+    } catch {
+      toast.error('Não foi possível baixar esta nota. Tente novamente.');
+    }
+  }, [currentUser]);
 
   // Group by month
   const notasPorMes = useMemo(() => {
@@ -214,6 +307,7 @@ export default function NotasList({ notas, categorias }) {
             </div>
           );
         })}
+        {showMemoryGallery ? <MemoryGallery notas={notas} /> : null}
       </div>
 
       {/* Modal de Detalhes */}
@@ -242,6 +336,14 @@ export default function NotasList({ notas, categorias }) {
                     alt="Nota fiscal"
                     className="w-full rounded-lg shadow-md"
                   />
+                  <Button
+                    variant="outline"
+                    className="mt-3 w-full gap-2"
+                    onClick={() => handleDownloadNota(notaSelecionada)}
+                  >
+                    <Download className="h-4 w-4" />
+                    Baixar esta nota
+                  </Button>
                 </div>
               )}
               {notaSelecionada.memoria_url && (
