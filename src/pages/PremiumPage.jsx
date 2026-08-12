@@ -141,17 +141,17 @@ function FeatureRow({ label, enabled, iconClassName }) {
   const Icon = featureIcons[label] || CheckCircle2;
 
   return (
-    <li className="flex items-start gap-3 text-sm leading-5">
-      <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl ${enabled ? iconClassName : 'bg-slate-100 text-slate-300 dark:bg-white/5 dark:text-slate-600'}`}>
+    <li className="grid min-h-[3rem] grid-cols-[1.75rem_1fr_1rem] items-start gap-3 text-sm leading-5">
+      <span className={`flex h-7 w-7 items-center justify-center rounded-xl ${enabled ? iconClassName : 'bg-slate-100 text-slate-300 dark:bg-white/5 dark:text-slate-600'}`}>
         <Icon className="h-3.5 w-3.5" />
       </span>
-      <span className={enabled ? 'font-semibold text-slate-800 dark:text-slate-100' : 'font-medium text-slate-400 dark:text-slate-500'}>
+      <span className={enabled ? 'pt-0.5 font-semibold text-slate-800 dark:text-slate-100' : 'pt-0.5 font-medium text-slate-400 dark:text-slate-500'}>
         {label}
       </span>
       {enabled ? (
-        <CheckCircle2 className="ml-auto mt-1 h-4 w-4 shrink-0 text-emerald-500" />
+        <CheckCircle2 className="mt-1 h-4 w-4 text-emerald-500" />
       ) : (
-        <XCircle className="ml-auto mt-1 h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" />
+        <XCircle className="mt-1 h-4 w-4 text-slate-300 dark:text-slate-600" />
       )}
     </li>
   );
@@ -177,9 +177,19 @@ function PlanIconCluster({ icons, iconBox }) {
 }
 
 function PlanCard({ plan, loadingPlan, onCheckout }) {
-  const visibleFeatures = plan.id === 'free'
+  const visibleFeatures = (plan.id === 'free'
     ? features
-    : features.filter((feature) => feature !== 'Armazenamento de notas por 1 ano');
+    : features.filter((feature) => feature !== 'Armazenamento de notas por 1 ano'))
+    .sort((a, b) => {
+      const aEnabled = plan.covered.includes(a);
+      const bEnabled = plan.covered.includes(b);
+
+      if (aEnabled === bEnabled) {
+        return 0;
+      }
+
+      return aEnabled ? -1 : 1;
+    });
 
   return (
     <article className={`group relative overflow-hidden rounded-[2rem] border ${plan.border} bg-gradient-to-br ${plan.aura} p-1 shadow-[0_24px_70px_rgba(15,23,42,0.20)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_32px_90px_rgba(15,23,42,0.28)] dark:shadow-black/40`}>

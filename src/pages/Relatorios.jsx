@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lucide-react';
@@ -48,11 +49,16 @@ const getReportYearOptions = (notas = []) => {
   return Array.from(years).filter((year) => year >= DEFAULT_MIN_YEAR).sort((a, b) => b - a);
 };
 
+const getDownloadYearOptions = () => {
+  const currentYear = new Date().getFullYear();
+  return Array.from({ length: currentYear - 1990 + 1 }, (_, index) => currentYear - index);
+};
+
 export default function Relatorios() {
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
   const [mostrarInforme, setMostrarInforme] = useState(false);
   const [anoComprovantes, setAnoComprovantes] = useState(new Date().getFullYear());
-  const [mesComprovantes, setMesComprovantes] = useState(String(new Date().getMonth()));
+  const [mesesComprovantes, setMesesComprovantes] = useState([new Date().getMonth()]);
   const [comprovantesModalOpen, setComprovantesModalOpen] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -94,6 +100,7 @@ export default function Relatorios() {
   });
 
   const visibleYearOptions = useMemo(() => getReportYearOptions(notas), [notas]);
+  const downloadYearOptions = useMemo(() => getDownloadYearOptions(), []);
 
   useEffect(() => {
     if (visibleYearOptions.length > 0 && !visibleYearOptions.includes(anoSelecionado)) {
@@ -350,7 +357,22 @@ export default function Relatorios() {
     }
 
     setAnoComprovantes(anoSelecionado);
+    setMesesComprovantes([new Date().getMonth()]);
     setComprovantesModalOpen(true);
+  };
+
+  const toggleMesComprovante = (monthIndex) => {
+    setMesesComprovantes((current) => {
+      if (current.includes(monthIndex)) {
+        return current.filter((item) => item !== monthIndex);
+      }
+
+      return [...current, monthIndex].sort((a, b) => a - b);
+    });
+  };
+
+  const toggleAnoInteiroComprovantes = (checked) => {
+    setMesesComprovantes(checked ? meses.map((_, index) => index) : [new Date().getMonth()]);
   };
 
   const downloadArquivosDedutiveis = async () => {
@@ -359,19 +381,26 @@ export default function Relatorios() {
       return;
     }
 
-    const selectedMonth = Number(mesComprovantes);
     const selectedYear = Number(anoComprovantes);
+    const selectedMonths = mesesComprovantes.map(Number).filter((month) => month >= 0 && month <= 11);
+
+    if (selectedMonths.length === 0) {
+      toast.info('Selecione pelo menos um mês ou escolha o ano inteiro.');
+      return;
+    }
 
     const notasComImagem = notas.filter(
       (n) =>
         n.imagem_url &&
         new Date(n.data_emissao).getFullYear() === selectedYear &&
-        new Date(n.data_emissao).getMonth() === selectedMonth
+        selectedMonths.includes(new Date(n.data_emissao).getMonth())
     );
 
     if (notasComImagem.length === 0) {
       toast.info(
-        'Nenhuma nota com arquivo anexado encontrada para o mês selecionado.'
+        selectedMonths.length === 12
+          ? 'Nenhuma nota com arquivo anexado encontrada para o ano selecionado.'
+          : 'Nenhuma nota com arquivo anexado encontrada para os meses selecionados.'
       );
       return;
     }
@@ -380,7 +409,10 @@ export default function Relatorios() {
     try {
       const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
-      const pasta = zip.folder(`comprovantes-${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`);
+      const periodoLabel = selectedMonths.length === 12
+        ? 'ano-inteiro'
+        : selectedMonths.map((month) => String(month + 1).padStart(2, '0')).join('-');
+      const pasta = zip.folder(`comprovantes-${selectedYear}-${periodoLabel}`);
       let arquivosAdicionados = 0;
 
       await Promise.all(
@@ -418,7 +450,7 @@ export default function Relatorios() {
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `comprovantes-${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}.zip`;
+      a.download = `comprovantes-${selectedYear}-${periodoLabel}.zip`;
       a.click();
       URL.revokeObjectURL(url);
       setComprovantesModalOpen(false);
@@ -674,7 +706,7 @@ export default function Relatorios() {
                 <DialogHeader>
                   <DialogTitle>Baixar notas fiscais</DialogTitle>
                   <DialogDescription>
-                    Selecione o ano e o mês das notas que deseja baixar em ZIP.
+                    Selecione o ano e um ou mais meses das notas que deseja baixar em ZIP.
                   </DialogDescription>
                 </DialogHeader>
 
@@ -688,7 +720,7 @@ export default function Relatorios() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {visibleYearOptions.map((ano) => (
+                        {downloadYearOptions.map((ano) => (
                           <SelectItem key={ano} value={String(ano)}>
                             {ano}
                           </SelectItem>
@@ -697,20 +729,44 @@ export default function Relatorios() {
                     </Select>
                   </div>
 
-                  <div className="grid gap-2">
-                    <label className="text-sm font-semibold text-foreground" htmlFor="mes-comprovantes">
-                      Mês
-                    </label>
-                    <Select value={mesComprovantes} onValueChange={setMesComprovantes}>
-                      <SelectTrigger id="mes-comprovantes" className="min-h-[44px] bg-background/70">
-                        <SelectValue placeholder="Selecione o mês" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {meses.map((mes, index) => (
-                          <SelectItem key={mes} value={String(index)}>{mes}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <label className="text-sm font-semibold text-foreground">
+                        Meses
+                      </label>
+                      <div className="flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-2">
+                        <span className="text-xs font-semibold text-muted-foreground">Ano inteiro</span>
+                        <Switch
+                          checked={mesesComprovantes.length === 12}
+                          onCheckedChange={toggleAnoInteiroComprovantes}
+                          disabled={baixandoArquivos}
+                          aria-label="Selecionar ano inteiro"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {meses.map((mes, index) => {
+                        const active = mesesComprovantes.includes(index);
+
+                        return (
+                          <Button
+                            key={mes}
+                            type="button"
+                            variant={active ? 'default' : 'outline'}
+                            className={active ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-background/70'}
+                            onClick={() => toggleMesComprovante(index)}
+                            disabled={baixandoArquivos}
+                          >
+                            {mes}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {mesesComprovantes.length === 12
+                        ? 'Ano inteiro selecionado.'
+                        : `${mesesComprovantes.length} mês${mesesComprovantes.length === 1 ? '' : 'es'} selecionado${mesesComprovantes.length === 1 ? '' : 's'}.`}
+                    </p>
                   </div>
                 </div>
 
