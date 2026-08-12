@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Brain, ImagePlus, Info, MoveHorizontal } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const CategoryCard = memo(function CategoryCard({
@@ -12,7 +12,6 @@ const CategoryCard = memo(function CategoryCard({
   cor,
   total,
   quantidade,
-  memoriaCount = 0,
   ativo,
   onClick,
   onInfoClick,
@@ -54,17 +53,6 @@ const CategoryCard = memo(function CategoryCard({
           </div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">{quantidade} notas</p>
-            {memoriaCount > 0 ? (
-              <span
-                title={`${memoriaCount} nota${memoriaCount !== 1 ? 's' : ''} com memória`}
-                aria-label={`${memoriaCount} nota${memoriaCount !== 1 ? 's' : ''} com memória`}
-                className="mt-0.5 inline-flex animate-pulse items-center justify-end gap-0.5 text-sky-400 dark:text-sky-300"
-              >
-                <ImagePlus className="h-3 w-3" aria-hidden="true" />
-                <MoveHorizontal className="h-2.5 w-2.5 opacity-70" aria-hidden="true" />
-                <Brain className="h-3 w-3" aria-hidden="true" />
-              </span>
-            ) : null}
           </div>
         </div>
         <h3 className="font-semibold text-foreground text-xs md:text-sm mb-1">{nome}</h3>

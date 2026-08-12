@@ -164,6 +164,12 @@ const NotaRow = memo(function NotaRow({ nota, categorias, onView, onEdit }) {
                 <span className={cn("px-2 py-0.5 rounded-full text-xs md:text-sm font-medium", cat?.cor, "bg-opacity-20")}>
                   {cat?.nome}
                 </span>
+                {nota.memoria_url ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-400/10 dark:text-amber-200">
+                    <ImagePlus className="h-3 w-3" aria-hidden="true" />
+                    Memória
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>

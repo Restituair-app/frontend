@@ -119,12 +119,10 @@ export default function Dashboard() {
   });
 
   const totalPorCategoria = {};
-  const memoriasPorCategoria = {};
   Object.keys(categorias).forEach((cat) => {
     totalPorCategoria[cat] = notasFiltradas.
     filter((n) => n.categoria === cat).
     reduce((sum, n) => sum + (n.valor_total || 0), 0);
-    memoriasPorCategoria[cat] = notasFiltradas.filter((n) => n.categoria === cat && n.memoria_url).length;
   });
 
   const totalGeral = Object.values(totalPorCategoria).reduce((sum, val) => sum + val, 0);
@@ -304,7 +302,7 @@ export default function Dashboard() {
                         </span>
                         <span className="flex min-w-0 flex-col gap-0.5">
                           <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</span>
-                          <span className="text-xs font-normal text-muted-foreground">Visualize e baixe documentos jurídicos de apoio</span>
+                          <span className="text-xs font-normal text-muted-foreground">Documentos jurídicos de apoio.</span>
                         </span>
                       </Button>
                     </Link>
@@ -460,7 +458,6 @@ export default function Dashboard() {
                     cor={cat.cor}
                     total={totalPorCategoria[key]}
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
-                    memoriaCount={memoriasPorCategoria[key]}
                     ativo={categoriaSelecionada === key}
                     onClick={() => handleCategoriaClick(key)}
                     onInfoClick={() => setModalCategoria(key)} />);
@@ -488,7 +485,6 @@ export default function Dashboard() {
                     cor={cat.cor}
                     total={totalPorCategoria[key]}
                     quantidade={notasFiltradas.filter((n) => n.categoria === key).length}
-                    memoriaCount={memoriasPorCategoria[key]}
                     ativo={categoriaSelecionada === key}
                     onClick={() => handleCategoriaClick(key)}
                     onInfoClick={

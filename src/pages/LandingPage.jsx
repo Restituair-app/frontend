@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { appLogo } from '@/brandAssets';
+import logoRestitua from '../../assets/logo.png';
+import heroLogo from '../../assets/hero-logo.jpg';
 import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
 import {
   Receipt, Shield, Zap, CheckCircle,
@@ -172,8 +173,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={appLogo} alt="Restitua logo" className="h-14 w-auto object-contain" />
-            <span className="text-base font-bold tracking-tight text-slate-900">Restitua</span>
+            <img src={logoRestitua} alt="Restitua logo" className="h-[2.8rem] w-auto object-contain" />
           </div>
           {/* Links centralizados - desktop */}
           <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
@@ -211,11 +211,11 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8">
           {/* Imagem à esquerda */}
           <div className="w-full md:w-2/5 flex-shrink-0 flex flex-col items-start gap-3">
-            <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white">
+            <div className="w-56 md:w-64 shadow-2xl">
               <img
-                src={appLogo}
+                src={heroLogo}
                 alt="Restitua App"
-                className="w-full h-full object-contain bg-white" />
+                className="w-full h-auto rounded-[2rem] object-contain" />
               
             </div>
             <span className="text-white text-sm font-semibold">Informe de Restituição sem complicação</span>

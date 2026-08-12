@@ -345,7 +345,7 @@ export default function Relatorios() {
 
   const abrirModalComprovantes = () => {
     if (!hasBasicAccess(currentUser)) {
-      toast.info('Baixar comprovantes em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
+      toast.info('Baixar notas fiscais em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
       return;
     }
 
@@ -355,7 +355,7 @@ export default function Relatorios() {
 
   const downloadArquivosDedutiveis = async () => {
     if (!hasBasicAccess(currentUser)) {
-      toast.info('Baixar comprovantes em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
+      toast.info('Baixar notas fiscais em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
       return;
     }
 
@@ -556,9 +556,9 @@ export default function Relatorios() {
                     <Download className="w-4 h-4" />
                     Baixar informe de restituição (Excel)
                   </Button>
-                  <Button onClick={abrirModalComprovantes} disabled={baixandoArquivos} aria-label="Baixar comprovantes dedutíveis" className="gap-2 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto">
+                  <Button onClick={abrirModalComprovantes} disabled={baixandoArquivos} aria-label="Baixar notas fiscais" className="gap-2 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto">
                     {baixandoArquivos ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderDown className="w-4 h-4" />}
-                    {baixandoArquivos ? 'Baixando...' : 'Baixar Comprovantes'}
+                    {baixandoArquivos ? 'Baixando...' : 'Baixar notas fiscais'}
                   </Button>
                 </div>
               </CardHeader>
@@ -672,7 +672,7 @@ export default function Relatorios() {
             <Dialog open={comprovantesModalOpen} onOpenChange={(open) => !baixandoArquivos && setComprovantesModalOpen(open)}>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Baixar comprovantes</DialogTitle>
+                  <DialogTitle>Baixar notas fiscais</DialogTitle>
                   <DialogDescription>
                     Selecione o ano e o mês das notas que deseja baixar em ZIP.
                   </DialogDescription>
