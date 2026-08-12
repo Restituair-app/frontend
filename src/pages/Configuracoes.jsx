@@ -143,7 +143,7 @@ export default function Configuracoes() {
   const subscriptionDescription = {
     [SUBSCRIPTION_TIERS.FREE]: 'PDF e relatórios sem limite; comprovantes dos últimos 12 meses.',
     [SUBSCRIPTION_TIERS.BASIC]: 'CSV/Excel liberado e histórico de até 5 anos.',
-    [SUBSCRIPTION_TIERS.PREMIUM]: 'Histórico ilimitado, memórias da nota e recursos Premium.',
+    [SUBSCRIPTION_TIERS.PREMIUM]: 'Histórico ilimitado e recursos Premium.',
   }[subscriptionTier];
   const subscriptionStyle = {
     [SUBSCRIPTION_TIERS.FREE]: {

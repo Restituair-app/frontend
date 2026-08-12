@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,18 +9,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Upload, Camera, FileText, Loader2, ArrowLeft, CheckCircle, Crown, Infinity, Archive, ShieldCheck, Info } from 'lucide-react';
 import CameraCapture from '@/components/CameraCapture';
 import WarrantyInfoModal from '@/components/common/WarrantyInfoModal';
-import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 import { getWarrantyStatus, parseWarrantyMonths } from '@/utils/warranty';
 
 const PREMIUM_UPGRADE_URL = 'https://restitua.com/premium';
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENT_SIZE_LABEL = '10 MB';
 const UPLOAD_SIZE_ERROR_MESSAGE = `O arquivo selecionado tem mais de ${MAX_ATTACHMENT_SIZE_LABEL}. Escolha uma imagem ou PDF menor para continuar.`;
-const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
 const ACCEPTED_NOTE_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
 const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
 
@@ -58,9 +54,7 @@ const categorias = {
 
 export default function UploadPage() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   const memoriaInputRef = useRef(null);
-  const isPremium = hasPremiumAccess(user);
   const [processando, setProcessando] = useState(false);
   const [etapa, setEtapa] = useState('upload'); // upload, extraindo, revisao, concluido
   const [imagemPreview, setImagemPreview] = useState(null);
@@ -211,12 +205,6 @@ export default function UploadPage() {
   }, [prepareImageFile, validateAttachmentSize]);
 
   const handleMemoriaSelect = useCallback(async (e) => {
-    if (!isPremium) {
-      toast.info(PREMIUM_MEMORY_TOOLTIP);
-      e.target.value = '';
-      return;
-    }
-
     const file = e.target.files[0];
     if (!file) return;
 
@@ -240,7 +228,7 @@ export default function UploadPage() {
       toast.error('Não foi possível converter o arquivo HEIC. Tente enviar em JPG, PNG ou PDF.');
       e.target.value = '';
     }
-  }, [isPremium, prepareImageFile, validateAttachmentSize]);
+  }, [prepareImageFile, validateAttachmentSize]);
 
   const processarNota = async () => {
     if (!arquivo) return;
@@ -353,7 +341,7 @@ export default function UploadPage() {
 
     let payload = dadosExtraidos;
 
-    if (isPremium && memoriaArquivo && !dadosExtraidos.memoria_url) {
+    if (memoriaArquivo && !dadosExtraidos.memoria_url) {
       try {
         setSalvandoMemoria(true);
         const { file_url } = await base44.integrations.Core.UploadFile({ file: memoriaArquivo });
@@ -381,7 +369,7 @@ export default function UploadPage() {
     };
 
     salvarMutation.mutate(payload);
-  }, [dadosExtraidos, isPremium, isUploadSizeError, memoriaArquivo, salvarMutation]);
+  }, [dadosExtraidos, isUploadSizeError, memoriaArquivo, salvarMutation]);
 
   const handleInputChange = useCallback((field, value) => {
     setDadosExtraidos(prev => ({ ...prev, [field]: value }));
@@ -683,52 +671,24 @@ export default function UploadPage() {
               </div>
 
               <div
-                className={`rounded-2xl border border-dashed p-4 transition ${
-                  isPremium
-                    ? 'border-slate-300 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-900/50'
-                    : 'border-slate-200 bg-slate-100/80 opacity-70 dark:border-slate-700 dark:bg-slate-800/70'
-                }`}
+                className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-4 transition dark:border-slate-700 dark:bg-slate-900/50"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <Label className={!isPremium ? 'text-slate-500 dark:text-slate-400' : ''}>Memória da Nota</Label>
+                    <Label>Memória da Nota</Label>
                     <p className="text-sm text-slate-500 dark:text-slate-300">
-                      {isPremium
-                        ? 'Anexe uma foto ou PDF relacionado a essa despesa no dia.'
-                        : 'Disponível para assinantes Premium.'}
+                      Anexe uma foto ou PDF relacionado a essa despesa no dia.
                     </p>
                   </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span
-                          onClick={() => {
-                            if (!isPremium) {
-                              toast.info(PREMIUM_MEMORY_TOOLTIP);
-                            }
-                          }}
-                        >
-                          <Button
-                            type="button"
-                            variant="outline"
-                            aria-disabled={!isPremium}
-                            className={`gap-2 ${!isPremium ? 'cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300' : ''}`}
-                            onClick={() => {
-                              if (!isPremium) {
-                                toast.info(PREMIUM_MEMORY_TOOLTIP);
-                                return;
-                              }
-                              memoriaInputRef.current?.click();
-                            }}
-                          >
-                            <Camera className="h-4 w-4" />
-                            {memoriaArquivo || dadosExtraidos.memoria_url ? 'Trocar memória' : 'Adicionar memória'}
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      {!isPremium ? <TooltipContent>{PREMIUM_MEMORY_TOOLTIP}</TooltipContent> : null}
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => memoriaInputRef.current?.click()}
+                  >
+                    <Camera className="h-4 w-4" />
+                    {memoriaArquivo || dadosExtraidos.memoria_url ? 'Trocar memória' : 'Adicionar memória'}
+                  </Button>
                   <input
                     ref={memoriaInputRef}
                     type="file"

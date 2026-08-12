@@ -345,7 +345,7 @@ export default function Relatorios() {
 
   const abrirModalComprovantes = () => {
     if (!hasBasicAccess(currentUser)) {
-      toast.info('Baixar notas fiscais em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
+      toast.info('Baixar notas fiscais está disponível nos planos Basic e Premium.');
       return;
     }
 
@@ -355,7 +355,7 @@ export default function Relatorios() {
 
   const downloadArquivosDedutiveis = async () => {
     if (!hasBasicAccess(currentUser)) {
-      toast.info('Baixar notas fiscais em lote está disponível nos planos Basic e Premium. No Free, baixe notas individuais enviadas nos últimos 12 meses.');
+      toast.info('Baixar notas fiscais está disponível nos planos Basic e Premium.');
       return;
     }
 

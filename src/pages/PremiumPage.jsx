@@ -71,6 +71,7 @@ const plans = [
       'Informe de restituição (PDF)',
       'Armazenamento de notas por 1 ano',
       'Relatório financeiro',
+      'Adicionar memórias',
     ],
   },
   {
@@ -95,6 +96,7 @@ const plans = [
       'Download das notas enviadas',
       'Informe de restituição (Excel)',
       'Armazenamento de notas até 5 anos',
+      'Adicionar memórias',
     ],
   },
   {

@@ -16,7 +16,7 @@ import EditNotaModal from './EditNotaModal';
 import ResignedImage from '@/components/common/ResignedImage';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { getWarrantyStatus } from '@/utils/warranty';
-import { canDownloadIndividualNota } from '@/utils/subscriptionPlan';
+import { canDownloadIndividualNota, hasBasicAccess } from '@/utils/subscriptionPlan';
 
 const isPdfUrl = (url) => String(url || '').split('?')[0].toLowerCase().endsWith('.pdf');
 const MEMORY_PAGE_SIZE = 5;
@@ -223,7 +223,7 @@ function MemoryGallery({ notas, currentUser }) {
     ];
 
     notas
-      .filter((nota) => nota.memoria_url && canDownloadIndividualNota(currentUser, nota))
+      .filter((nota) => nota.memoria_url)
       .sort((a, b) => (getNotaCreatedDate(b)?.getTime() || 0) - (getNotaCreatedDate(a)?.getTime() || 0))
       .forEach((nota) => {
         const createdDate = getNotaCreatedDate(nota);
@@ -246,16 +246,11 @@ function MemoryGallery({ notas, currentUser }) {
       });
 
     return sections.filter((section) => section.items.length > 0);
-  }, [currentUser, notas]);
+  }, [notas]);
 
   const handleDownloadMemory = useCallback(async (nota) => {
     if (!nota?.memoria_url) {
       toast.info('Esta memória não possui arquivo anexado.');
-      return;
-    }
-
-    if (!canDownloadIndividualNota(currentUser, nota)) {
-      toast.info('No plano Free, as memórias seguem o limite de notas enviadas nos últimos 12 meses.');
       return;
     }
 
@@ -368,6 +363,7 @@ function MemoryGallery({ notas, currentUser }) {
 }
 
 export default function NotasList({ notas, categorias, currentUser, showMemoryGallery = false }) {
+  const canDownloadNotasFiscais = hasBasicAccess(currentUser);
   const [notaSelecionada, setNotaSelecionada] = useState(null);
   const [notaEditando, setNotaEditando] = useState(null);
   const [mesesOcultos, setMesesOcultos] = useState({});
@@ -380,8 +376,8 @@ export default function NotasList({ notas, categorias, currentUser, showMemoryGa
       return;
     }
 
-    if (!canDownloadIndividualNota(currentUser, nota)) {
-      toast.info('No plano Free, o download individual libera apenas notas enviadas nos últimos 12 meses.');
+    if (!hasBasicAccess(currentUser)) {
+      toast.info('Baixar notas fiscais está disponível nos planos Basic e Premium.');
       return;
     }
 
@@ -481,14 +477,16 @@ export default function NotasList({ notas, categorias, currentUser, showMemoryGa
                     alt="Nota fiscal"
                     className="w-full rounded-lg shadow-md"
                   />
-                  <Button
-                    variant="outline"
-                    className="mt-3 w-full gap-2"
-                    onClick={() => handleDownloadNota(notaSelecionada)}
-                  >
-                    <Download className="h-4 w-4" />
-                    Baixar esta nota
-                  </Button>
+                  {canDownloadNotasFiscais ? (
+                    <Button
+                      variant="outline"
+                      className="mt-3 w-full gap-2"
+                      onClick={() => handleDownloadNota(notaSelecionada)}
+                    >
+                      <Download className="h-4 w-4" />
+                      Baixar esta nota
+                    </Button>
+                  ) : null}
                 </div>
               )}
               {notaSelecionada.memoria_url && (

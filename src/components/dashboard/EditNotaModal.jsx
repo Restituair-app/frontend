@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,16 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Camera, FileText, Info, Loader2, Save, Trash2 } from 'lucide-react';
 import WarrantyInfoModal from '@/components/common/WarrantyInfoModal';
 import ResignedImage from '@/components/common/ResignedImage';
-import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 import { getWarrantyStatus, parseWarrantyMonths } from '@/utils/warranty';
 
 const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
 const UPLOAD_SIZE_ERROR_MESSAGE = 'O arquivo selecionado tem mais de 10 MB. Escolha uma imagem ou PDF menor para continuar.';
-const PREMIUM_MEMORY_TOOLTIP = 'Memória da Nota é uma funcionalidade Premium. Assine um plano no site do Restitua para acessar.';
 const ACCEPTED_MEMORY_FILE_TYPES = 'image/*,.heic,.heif,application/pdf,.pdf';
 
 const isPdfLikeValue = (value) => {
@@ -54,9 +50,7 @@ const categorias = {
 
 export default function EditNotaModal({ nota, onClose }) {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   const memoriaInputRef = useRef(null);
-  const isPremium = hasPremiumAccess(user);
   const [dados, setDados] = useState({ ...nota });
   const [confirmarDelete, setConfirmarDelete] = useState(false);
   const [memoriaArquivo, setMemoriaArquivo] = useState(null);
@@ -117,12 +111,6 @@ export default function EditNotaModal({ nota, onClose }) {
   };
 
   const handleMemoriaSelect = (event) => {
-    if (!isPremium) {
-      toast.info(PREMIUM_MEMORY_TOOLTIP);
-      event.target.value = '';
-      return;
-    }
-
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -142,7 +130,7 @@ export default function EditNotaModal({ nota, onClose }) {
       garantia_meses: dados.categoria === 'eletronicos' ? dados.garantia_meses ?? null : null,
     };
 
-    if (isPremium && memoriaArquivo) {
+    if (memoriaArquivo) {
       try {
         setSalvandoMemoria(true);
         const { file_url } = await base44.integrations.Core.UploadFile({ file: memoriaArquivo });
@@ -255,50 +243,24 @@ export default function EditNotaModal({ nota, onClose }) {
           </div>
 
           <div
-            className={`rounded-2xl border border-dashed p-4 transition ${
-              isPremium
-                ? 'border-slate-300 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-900/50'
-                : 'border-slate-200 bg-slate-100/80 opacity-70 dark:border-slate-700 dark:bg-slate-800/70'
-            }`}
+            className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-4 transition dark:border-slate-700 dark:bg-slate-900/50"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <Label className={!isPremium ? 'text-slate-500 dark:text-slate-400' : ''}>Memória da Nota</Label>
+                <Label>Memória da Nota</Label>
                 <p className="text-sm text-muted-foreground">
-                  {isPremium ? 'Foto ou PDF relacionado a essa despesa.' : 'Disponível para assinantes Premium.'}
+                  Foto ou PDF relacionado a essa despesa.
                 </p>
               </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span
-                      onClick={() => {
-                        if (!isPremium) {
-                          toast.info(PREMIUM_MEMORY_TOOLTIP);
-                        }
-                      }}
-                    >
-                      <Button
-                        type="button"
-                        variant="outline"
-                        aria-disabled={!isPremium}
-                        className={`gap-2 ${!isPremium ? 'cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300' : ''}`}
-                        onClick={() => {
-                          if (!isPremium) {
-                            toast.info(PREMIUM_MEMORY_TOOLTIP);
-                            return;
-                          }
-                          memoriaInputRef.current?.click();
-                        }}
-                      >
-                        <Camera className="h-4 w-4" />
-                        {memoriaArquivo || dados.memoria_url ? 'Trocar memória' : 'Adicionar memória'}
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {!isPremium ? <TooltipContent>{PREMIUM_MEMORY_TOOLTIP}</TooltipContent> : null}
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-2"
+                onClick={() => memoriaInputRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" />
+                {memoriaArquivo || dados.memoria_url ? 'Trocar memória' : 'Adicionar memória'}
+              </Button>
               <input
                 ref={memoriaInputRef}
                 type="file"
