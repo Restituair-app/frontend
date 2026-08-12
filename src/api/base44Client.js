@@ -384,10 +384,10 @@ const supportTickets = {
 };
 
 const billing = {
-  async createCheckout({ plan, couponCode }) {
+  async createCheckout({ plan }) {
     return request('/billing/checkout', {
       method: 'POST',
-      body: { plan, couponCode: couponCode || undefined },
+      body: { plan },
     });
   },
 
