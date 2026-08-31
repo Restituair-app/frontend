@@ -398,6 +398,43 @@ const billing = {
   },
 };
 
+const cashback = {
+  async overview() {
+    return request('/cashback/overview');
+  },
+
+  async enroll(payload) {
+    return request('/cashback/enroll', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  async updatePixKey(payload) {
+    return request('/cashback/pix-key', {
+      method: 'PATCH',
+      body: payload,
+    });
+  },
+
+  async requestWithdrawal() {
+    return request('/cashback/withdrawals', {
+      method: 'POST',
+    });
+  },
+
+  async redeemCoupons(payload) {
+    return request('/cashback/coupons/redeem', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  async prizes() {
+    return request('/cashback/prizes');
+  },
+};
+
 const integrations = {
   Core: {
     async UploadFile({ file }) {
@@ -442,5 +479,6 @@ export const base44 = {
   auditTickets,
   supportTickets,
   billing,
+  cashback,
   appLogs,
 };

@@ -16,6 +16,8 @@ const Configuracoes = lazy(() => import('./pages/Configuracoes'));
 const ModelosJuridicos = lazy(() => import('./pages/ModelosJuridicos'));
 const AuditoriaTrimestral = lazy(() => import('./pages/AuditoriaTrimestral'));
 const SuportePremium = lazy(() => import('./pages/SuportePremium'));
+const Cashback = lazy(() => import('./pages/Cashback'));
+const PremiosCashback = lazy(() => import('./pages/PremiosCashback'));
 
 export const PAGES = {
     "Dashboard":     Dashboard,
@@ -25,6 +27,8 @@ export const PAGES = {
     "ModelosJuridicos": ModelosJuridicos,
     "AuditoriaTrimestral": AuditoriaTrimestral,
     "SuportePremium": SuportePremium,
+    "Cashback": Cashback,
+    "PremiosCashback": PremiosCashback,
 };
 
 export const pagesConfig = {

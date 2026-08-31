@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Clock3, Crown, Lock, MessageCircle, Send } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CheckCircle2, Clock3, MessageCircle, Send } from 'lucide-react';
 
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { hasPremiumAccess } from '@/utils/subscriptionPlan';
 
 const statusMeta = {
   nao_respondido: { label: 'Não respondido', icon: Clock3, className: 'bg-amber-100 text-amber-700 dark:bg-amber-300/15 dark:text-amber-200' },
@@ -33,12 +31,10 @@ export default function SuportePremium() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
-  const isPremium = hasPremiumAccess(currentUser);
-
   const ticketsQuery = useQuery({
     queryKey: ['support-tickets'],
     queryFn: () => base44.supportTickets.list(),
-    enabled: Boolean(currentUser) && isPremium,
+    enabled: Boolean(currentUser),
     retry: false,
   });
 
@@ -74,38 +70,11 @@ export default function SuportePremium() {
     },
   });
 
-  if (currentUser && !isPremium) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 dark:from-slate-950 dark:to-slate-900 md:p-8">
-        <div className="mx-auto max-w-3xl pt-6">
-          <Card className="overflow-hidden border-amber-200 bg-white/90 shadow-xl dark:border-amber-400/25 dark:bg-slate-900/80">
-            <CardHeader className="space-y-3 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-300/15 dark:text-amber-200">
-                <Lock className="h-7 w-7" />
-              </div>
-              <CardTitle className="text-xl text-slate-950 dark:text-slate-50">Suporte Premium é exclusivo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-center">
-              <p className="text-sm leading-6 text-muted-foreground">
-                Assinantes Premium podem falar diretamente com o suporte e acompanhar o atendimento pelo Restitua.
-              </p>
-              <Link to="/premium">
-                <Button className="bg-gradient-to-r from-slate-900 to-blue-900 text-white hover:opacity-95">
-                  <Crown className="mr-2 h-4 w-4" /> Ver plano Premium
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 dark:from-slate-950 dark:to-slate-900 md:p-8">
       <div className="mx-auto max-w-6xl pt-6">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-50">Suporte Premium</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-50">Suporte</h1>
           <p className="text-sm text-muted-foreground">Envie uma mensagem para o suporte e acompanhe a resposta por aqui.</p>
         </div>
 
@@ -160,7 +129,7 @@ export default function SuportePremium() {
                       {activeTicket ? 'Conversa com suporte' : 'Nova mensagem'}
                     </CardTitle>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {activeTicket ? `Atualizado em ${formatDate(activeTicket.lastMessageAt)}` : 'Abra um novo atendimento premium.'}
+                      {activeTicket ? `Atualizado em ${formatDate(activeTicket.lastMessageAt)}` : 'Abra um novo atendimento.'}
                     </p>
                   </div>
                   {activeTicket ? (

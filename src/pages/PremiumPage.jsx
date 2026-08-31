@@ -35,7 +35,7 @@ const features = [
   'Adicionar memórias',
   'Auditoria trimestral de notas restituíveis',
   'Modelos de requerimentos',
-  'Suporte Premium',
+  'Suporte',
 ];
 
 const featureIcons = {
@@ -48,7 +48,7 @@ const featureIcons = {
   'Adicionar memórias': ImagePlus,
   'Auditoria trimestral de notas restituíveis': FileSearch,
   'Modelos de requerimentos': FileSignature,
-  'Suporte Premium': MessageCircle,
+  'Suporte': MessageCircle,
 };
 
 const plans = [
@@ -72,6 +72,7 @@ const plans = [
       'Armazenamento de notas por 1 ano',
       'Relatório financeiro',
       'Adicionar memórias',
+      'Suporte',
     ],
   },
   {
@@ -97,6 +98,7 @@ const plans = [
       'Informe de restituição (Excel)',
       'Armazenamento de notas até 5 anos',
       'Adicionar memórias',
+      'Suporte',
     ],
   },
   {
@@ -125,7 +127,7 @@ const plans = [
       'Adicionar memórias',
       'Auditoria trimestral de notas restituíveis',
       'Modelos de requerimentos',
-      'Suporte Premium',
+      'Suporte',
     ],
   },
 ];
@@ -134,7 +136,7 @@ const quickHighlights = [
   { icon: ClipboardList, label: 'Informe de restituição pronto para declaração de IR' },
   { icon: HardDrive, label: 'Histórico de notas por plano' },
   { icon: ImagePlus, label: 'Adicione fotos para lembrar de suas despesas' },
-  { icon: Headphones, label: 'Suporte dedicado no Premium' },
+  { icon: Headphones, label: 'Suporte pelo app' },
 ];
 
 function FeatureRow({ label, enabled, iconClassName }) {
