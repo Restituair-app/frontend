@@ -10,7 +10,7 @@ import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
 import {
   Receipt, Shield, Zap, CheckCircle,
   ArrowRight, BarChart2, Upload, LogIn, Heart, Smile, GraduationCap, Landmark, Scale, Users,
-  Check, X, Info, ShieldCheck, Star } from
+  Check, X, Info, ShieldCheck, Star, Crown } from
 'lucide-react';
 
 const features = [
@@ -181,8 +181,17 @@ export default function LandingPage() {
             <button onClick={() => document.getElementById('deducoes').scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Deduções IR</button>
             <button onClick={() => document.getElementById('como-funciona').scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Como Funciona</button>
             <button onClick={() => document.getElementById('beneficios').scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Benefícios</button>
+            <Link to="/premium" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">Planos</Link>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              asChild
+              className="hidden sm:inline-flex rounded-full border border-amber-300/70 bg-gradient-to-r from-amber-300 via-yellow-300 to-emerald-300 px-5 text-slate-950 shadow-lg shadow-amber-200/40 hover:from-amber-200 hover:via-yellow-200 hover:to-emerald-200">
+              <Link to="/premium">
+                <Crown className="w-4 h-4" />
+                Ver planos
+              </Link>
+            </Button>
             {/* Menu mobile */}
             <button className="md:hidden p-2 text-slate-600" onClick={() => setMenuOpen((o) => !o)}>
               <div className="w-5 h-0.5 bg-slate-600 mb-1"></div>
@@ -202,6 +211,10 @@ export default function LandingPage() {
             <button onClick={() => {document.getElementById('deducoes').scrollIntoView({ behavior: 'smooth' });setMenuOpen(false);}} className="text-sm font-medium text-slate-700 text-left">Deduções IR</button>
             <button onClick={() => {document.getElementById('como-funciona').scrollIntoView({ behavior: 'smooth' });setMenuOpen(false);}} className="text-sm font-medium text-slate-700 text-left">Como Funciona</button>
             <button onClick={() => {document.getElementById('beneficios').scrollIntoView({ behavior: 'smooth' });setMenuOpen(false);}} className="text-sm font-medium text-slate-700 text-left">Benefícios</button>
+            <Link to="/premium" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-yellow-300 to-emerald-300 px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-amber-100">
+              <Crown className="w-4 h-4" />
+              Ver planos
+            </Link>
           </div>
         }
       </nav>
@@ -245,6 +258,15 @@ export default function LandingPage() {
                 className="text-base px-8 py-6"
                 onClick={() => document.getElementById('como-funciona').scrollIntoView({ behavior: 'smooth' })}>
                 Como funciona
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                className="relative overflow-hidden border border-amber-200/80 bg-gradient-to-r from-amber-300 via-yellow-300 to-emerald-300 text-base text-slate-950 px-8 py-6 shadow-2xl shadow-amber-400/20 hover:from-amber-200 hover:via-yellow-200 hover:to-emerald-200">
+                <Link to="/premium">
+                  <Crown className="w-5 h-5" />
+                  Ver planos
+                </Link>
               </Button>
             </div>
             {/* <p className="text-sm text-slate-400 mt-4">Sem cartão de crédito. Sem burocracia.</p> */}
