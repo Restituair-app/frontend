@@ -14,6 +14,18 @@ import { Label } from '@/components/ui/label';
 
 const formatCents = (value = 0) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value / 100);
 const maskPixKey = (value = '') => value.includes('@') ? `${value.slice(0, 2)}***@${value.split('@')[1]}` : value.length > 7 ? `${value.slice(0, 4)}***${value.slice(-3)}` : value;
+const CASHBACK_TERMS_SUMMARY = [
+  'O cashback é um benefício promocional do Restitua e não representa restituição do Imposto de Renda nem garantia de dedução fiscal.',
+  'A participação é exclusiva para usuários Basic ou Premium, com cadastro ativo, aceite dos termos e dados verdadeiros e atualizados.',
+  'Somente documentos válidos, legíveis e vinculados ao usuário, dependentes ou pessoas permitidas pela legislação podem ser considerados.',
+  'Apenas despesas realizadas a partir de 01/09/2026 podem gerar cashback.',
+  'Notas fiscais restituíveis aprovadas podem gerar até 1% de cashback, limitado a R$ 10.000 em notas elegíveis por mês.',
+  'Categorias com limite legal usam o teto proporcional mensal; valores excedentes não acumulam para meses seguintes.',
+  'Pensão alimentícia, PGBL, documentos duplicados, cancelados, adulterados, ilegíveis ou com indício de fraude não geram cashback.',
+  'Cada crédito expira em até 12 meses e o saque mínimo é de R$ 10,00, via chave Pix do titular da conta cadastrada.',
+  'O Restitua pode suspender, recusar ou revisar saques e estornar créditos em caso de erro, inconsistência, reembolso, devolução ou fraude.',
+  'Colaboradores, prestadores, sócios, parceiros e pessoas vinculadas ao Restitua não são elegíveis ao programa.',
+];
 
 const statusClass = (status = '') => {
   if (status.includes('pagamento_realizado') || status.includes('ativo') || status.includes('calculado')) return 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200';
@@ -114,14 +126,15 @@ export default function Cashback() {
             </div>
             <Card className="border-white/10 bg-white/95 text-slate-950 dark:bg-slate-950/80 dark:text-white">
               <CardContent className="space-y-4 p-5">
-                <h2 className="text-lg font-bold">Termos de uso</h2>
-                {[
-                  'Notas fiscais restituíveis podem gerar 1% de cashback.',
-                  'O limite mensal considerado é de R$ 10.000 em notas elegíveis.',
-                  'O saldo acumula por até 12 meses e o saque mínimo é de R$ 10,00.',
-                  'Solicitações passam por análise para prevenção de fraude antes do pagamento.',
-                ].map((item) => <p key={item} className="flex gap-2 text-sm text-muted-foreground"><CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />{item}</p>)}
-                <div className="space-y-2"><Label>Chave Pix</Label><Input value={pixKey} onChange={(event) => setPixKey(event.target.value)} placeholder="E-mail, CPF, telefone ou chave aleatória" /></div>
+                <h2 className="text-lg font-bold">Termos simplificados do programa</h2>
+                {CASHBACK_TERMS_SUMMARY.map((item) => <p key={item} className="flex gap-2 text-sm text-muted-foreground"><CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />{item}</p>)}
+                <div className="space-y-2">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <Label>Chave Pix</Label>
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-300">Somente será aceito se for do titular da conta do cadastro.</span>
+                  </div>
+                  <Input value={pixKey} onChange={(event) => setPixKey(event.target.value)} placeholder="E-mail, CPF, telefone ou chave aleatória" />
+                </div>
                 <label className="flex cursor-pointer gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} /> Li e aceito participar do Programa Cashback.</label>
                 <Button className="w-full" disabled={!acceptedTerms || !pixKey.trim() || enrollMutation.isPending} onClick={() => enrollMutation.mutate()}>{enrollMutation.isPending ? 'Entrando...' : 'Entrar no Programa Cashback'}</Button>
               </CardContent>
@@ -152,7 +165,15 @@ export default function Cashback() {
                   <div><h2 className="font-bold text-slate-950 dark:text-white">Chave Pix</h2><p className="text-sm text-muted-foreground">Edite antes de solicitar um novo saque.</p></div>
                   <Button variant="outline" size="sm" onClick={() => setEditingPix((current) => !current)}>{editingPix ? 'Cancelar' : 'Editar'}</Button>
                 </div>
-                {editingPix ? <div className="flex flex-col gap-2 sm:flex-row"><Input value={pixKey} onChange={(event) => setPixKey(event.target.value)} /><Button disabled={!pixKey.trim() || updatePixMutation.isPending} onClick={() => updatePixMutation.mutate()}>Salvar</Button></div> : null}
+                {editingPix ? (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-amber-600 dark:text-amber-300">Somente será aceito se for do titular da conta do cadastro.</p>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Input value={pixKey} onChange={(event) => setPixKey(event.target.value)} />
+                      <Button disabled={!pixKey.trim() || updatePixMutation.isPending} onClick={() => updatePixMutation.mutate()}>Salvar</Button>
+                    </div>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
 
