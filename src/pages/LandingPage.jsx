@@ -81,7 +81,7 @@ function LandingDeductionModal({ categoryKey, onClose }) {
                   {Icon ? <Icon className={`h-10 w-10 ${meta?.color || 'text-blue-600'}`} /> : null}
                 </div>
                 <div>
-                  <h2 className="text-3xl font-black leading-tight text-slate-950 md:text-4xl">{content.title}</h2>
+                  <h2 className="text-2xl font-semibold leading-tight text-slate-950 md:text-3xl">{content.title}</h2>
                   <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-extrabold text-blue-700">
                     <CheckCircle className="h-3.5 w-3.5" />
                     Dedutível no IR
@@ -102,7 +102,7 @@ function LandingDeductionModal({ categoryKey, onClose }) {
                     Regra de dedução
                     <Info className="h-4 w-4 text-slate-500" />
                   </div>
-                  <p className="text-xl font-black leading-tight text-blue-700">{content.deductionNote}</p>
+                  <p className="text-lg font-semibold leading-snug text-blue-700">{content.deductionNote}</p>
                 </div>
               ) : null}
             </div>
@@ -111,7 +111,7 @@ function LandingDeductionModal({ categoryKey, onClose }) {
               <section>
                 <div className="mb-4 flex items-center gap-2 text-emerald-700">
                   <CheckCircle className="h-5 w-5" />
-                  <h3 className="text-sm font-black">O que entra</h3>
+                  <h3 className="text-sm font-semibold">O que entra</h3>
                 </div>
                 <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5">
                   <DeductionInfoList items={content.included} icon={Check} iconClassName="text-emerald-600" />
@@ -121,7 +121,7 @@ function LandingDeductionModal({ categoryKey, onClose }) {
               <section>
                 <div className="mb-4 flex items-center gap-2 text-red-600">
                   <X className="h-5 w-5 rounded-full border border-red-200 p-0.5" />
-                  <h3 className="text-sm font-black">O que não entra</h3>
+                  <h3 className="text-sm font-semibold">O que não entra</h3>
                 </div>
                 <div className="rounded-2xl border border-red-100 bg-red-50/60 p-5">
                   <DeductionInfoList items={content.excluded} icon={X} iconClassName="text-red-500" />
@@ -133,7 +133,7 @@ function LandingDeductionModal({ categoryKey, onClose }) {
               <section className="mt-7 rounded-2xl border border-slate-100 bg-slate-50 p-5">
                 <div className="mb-3 flex items-center gap-2">
                   <Star className="h-5 w-5 text-blue-700" />
-                  <h3 className="text-sm font-black text-slate-950">Importante</h3>
+                  <h3 className="text-sm font-semibold text-slate-950">Importante</h3>
                 </div>
                 <div className="space-y-2">
                   {importantItems.map((item) => (
@@ -172,12 +172,12 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#f7f8f4] font-['Avenir_Next','Trebuchet_MS',sans-serif] text-[#101c33]">
+    <div className="min-h-screen overflow-hidden bg-[#f7f8f4] font-['Avenir_Next','Helvetica_Neue',sans-serif] text-[#101c33]">
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-[#10213b]/10 bg-[#f7f8f4]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 lg:px-8">
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3" aria-label="Voltar ao início">
             <img src={appLogo} alt="" className="h-10 w-10 rounded-xl object-cover" />
-            <span className="text-xl font-black tracking-[-0.04em]">Restitua</span>
+            <span className="text-xl font-semibold tracking-[-0.01em]">Restitua</span>
           </button>
 
           <div className="hidden items-center gap-8 lg:flex">
@@ -188,8 +188,8 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={handleLogin} className="hidden font-bold text-[#10213b] sm:inline-flex">Entrar</Button>
-            <Button onClick={handleLogin} className="rounded-full bg-[#175cd3] px-5 font-bold shadow-none hover:bg-[#124aa9]">
+            <Button variant="ghost" onClick={handleLogin} className="hidden font-medium text-[#10213b] sm:inline-flex">Entrar</Button>
+            <Button onClick={handleLogin} className="rounded-full bg-[#175cd3] px-5 font-medium shadow-none hover:bg-[#124aa9]">
               Criar conta
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -217,22 +217,22 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute -left-44 bottom-0 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
           <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-[1.08fr_.92fr]">
             <div>
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#175cd3]/15 bg-white/70 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-[#175cd3]">
+              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#175cd3]/15 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#175cd3]">
                 <Sparkles className="h-4 w-4" />
                 Organização fiscal inteligente
               </div>
-              <h1 className="max-w-3xl text-[clamp(3rem,7vw,6.6rem)] font-black leading-[.91] tracking-[-0.065em] text-[#10213b]">
+              <h1 className="max-w-3xl text-[clamp(2.6rem,5.2vw,4.8rem)] font-medium leading-[1.04] tracking-[-0.035em] text-[#10213b]">
                 Sua nota fiscal vale mais.
               </h1>
               <p className="mt-8 max-w-xl text-lg leading-8 text-slate-600 lg:text-xl">
                 Fotografe suas notas. O Restitua lê, organiza e prepara as informações para você aproveitar melhor sua declaração de Imposto de Renda.
               </p>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Button onClick={handleLogin} size="lg" className="h-14 rounded-full bg-[#175cd3] px-7 text-base font-black hover:bg-[#124aa9]">
+                <Button onClick={handleLogin} size="lg" className="h-14 rounded-full bg-[#175cd3] px-7 text-base font-semibold hover:bg-[#124aa9]">
                   Começar gratuitamente
                   <ArrowRight className="h-5 w-5" />
                 </Button>
-                <Button asChild variant="outline" size="lg" className="h-14 rounded-full border-[#10213b]/20 bg-transparent px-7 text-base font-bold hover:bg-white">
+                <Button asChild variant="outline" size="lg" className="h-14 rounded-full border-[#10213b]/20 bg-transparent px-7 text-base font-medium hover:bg-white">
                   <Link to="/premium">Conhecer os planos</Link>
                 </Button>
               </div>
@@ -248,18 +248,18 @@ export default function LandingPage() {
               <div className="relative overflow-hidden rounded-[34px] border border-white/80 bg-[#10213b] p-5 shadow-[0_35px_90px_-35px_rgba(16,33,59,.6)] sm:p-7">
                 <div className="mb-8 flex items-center justify-between text-white">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[.18em] text-blue-200">Resumo anual</p>
-                    <p className="mt-1 text-lg font-black">Suas despesas organizadas</p>
+                    <p className="text-xs font-medium uppercase tracking-[.14em] text-blue-200">Resumo anual</p>
+                    <p className="mt-1 text-lg font-semibold">Suas despesas organizadas</p>
                   </div>
                   <div className="rounded-2xl bg-white/10 p-3"><BarChart3 className="h-6 w-6 text-[#87d3a9]" /></div>
                 </div>
                 <div className="rounded-[25px] bg-white p-6 sm:p-7">
                   <div className="flex items-start justify-between border-b border-slate-100 pb-6">
                     <div>
-                      <p className="text-sm font-bold text-slate-500">Estimado dedutível</p>
-                      <p className="mt-1 text-3xl font-black tracking-tight text-[#10213b] sm:text-4xl">R$ 1.970,00</p>
+                      <p className="text-sm font-medium text-slate-500">Estimado dedutível</p>
+                      <p className="mt-1 text-3xl font-semibold tracking-tight text-[#10213b] sm:text-4xl">R$ 1.970,00</p>
                     </div>
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">2026</span>
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">2026</span>
                   </div>
                   <div className="space-y-4 pt-6">
                     {[
@@ -268,15 +268,15 @@ export default function LandingPage() {
                       ['Dependentes', 'R$ 200,00', 'bg-[#42a984]', '30%'],
                     ].map(([label, value, color, width]) => (
                       <div key={label}>
-                        <div className="mb-2 flex justify-between text-xs font-bold"><span>{label}</span><span>{value}</span></div>
+                        <div className="mb-2 flex justify-between text-xs font-medium"><span>{label}</span><span>{value}</span></div>
                         <div className="h-2 rounded-full bg-slate-100"><div className={`h-2 rounded-full ${color}`} style={{ width }} /></div>
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-white/10 p-4 text-white"><FileText className="mb-4 h-5 w-5 text-blue-200" /><p className="text-xs text-blue-100">Notas salvas</p><p className="mt-1 text-xl font-black">17</p></div>
-                  <div className="rounded-2xl bg-[#87d3a9] p-4 text-[#10213b]"><FolderCheck className="mb-4 h-5 w-5" /><p className="text-xs font-semibold">Informe</p><p className="mt-1 text-xl font-black">Pronto</p></div>
+                  <div className="rounded-2xl bg-white/10 p-4 text-white"><FileText className="mb-4 h-5 w-5 text-blue-200" /><p className="text-xs text-blue-100">Notas salvas</p><p className="mt-1 text-xl font-semibold">17</p></div>
+                  <div className="rounded-2xl bg-[#87d3a9] p-4 text-[#10213b]"><FolderCheck className="mb-4 h-5 w-5" /><p className="text-xs font-medium">Informe</p><p className="mt-1 text-xl font-semibold">Pronto</p></div>
                 </div>
               </div>
             </div>
@@ -287,8 +287,8 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:gap-20">
               <div>
-                <p className="text-xs font-black uppercase tracking-[.2em] text-[#87d3a9]">Do comprovante ao relatório</p>
-                <h2 className="mt-5 text-4xl font-black leading-tight tracking-[-.045em] md:text-5xl">Menos planilha. Mais clareza sobre seu dinheiro.</h2>
+                <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#87d3a9]">Do comprovante ao relatório</p>
+                <h2 className="mt-5 text-3xl font-medium leading-tight tracking-[-.025em] md:text-4xl">Menos planilha. Mais clareza sobre seu dinheiro.</h2>
                 <p className="mt-6 max-w-md leading-7 text-slate-300">Uma rotina simples para transformar documentos espalhados em informação fiscal útil.</p>
               </div>
               <div className="grid border-l border-t border-white/15 sm:grid-cols-2">
@@ -300,7 +300,7 @@ export default function LandingPage() {
                         <Icon className="h-7 w-7 text-[#87d3a9]" />
                         <span className="font-mono text-xs text-slate-500">0{index + 1}</span>
                       </div>
-                      <h3 className="text-xl font-black">{feature.title}</h3>
+                      <h3 className="text-xl font-semibold">{feature.title}</h3>
                       <p className="mt-3 text-sm leading-6 text-slate-300">{feature.desc}</p>
                     </article>
                   );
@@ -314,8 +314,8 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl">
             <div className="mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
               <div>
-                <p className="text-xs font-black uppercase tracking-[.2em] text-[#175cd3]">Categorias dedutíveis</p>
-                <h2 className="mt-4 max-w-2xl text-4xl font-black tracking-[-.045em] md:text-5xl">Entenda o que pode entrar na sua declaração.</h2>
+                <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#175cd3]">Categorias dedutíveis</p>
+                <h2 className="mt-4 max-w-2xl text-3xl font-medium tracking-[-.025em] md:text-4xl">Entenda o que pode entrar na sua declaração.</h2>
               </div>
               <p className="max-w-md leading-7 text-slate-600">Selecione uma categoria para consultar regras, exemplos e pontos de atenção.</p>
             </div>
@@ -328,7 +328,7 @@ export default function LandingPage() {
                       <div className={`rounded-2xl p-3 ${deduction.bg}`}><Icon className={`h-6 w-6 ${deduction.color}`} /></div>
                       <ChevronRight className="h-5 w-5 text-slate-300 transition-transform group-hover:translate-x-1 group-hover:text-blue-600" />
                     </div>
-                    <div><p className="text-lg font-black">{deduction.label}</p><p className="mt-1 text-sm text-slate-500">Consultar detalhes</p></div>
+                    <div><p className="text-lg font-semibold">{deduction.label}</p><p className="mt-1 text-sm text-slate-500">Consultar detalhes</p></div>
                   </button>
                 );
               })}
@@ -340,14 +340,14 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-12 lg:grid-cols-[.65fr_1.35fr]">
               <div>
-                <p className="text-xs font-black uppercase tracking-[.2em] text-[#175cd3]">Como funciona</p>
-                <h2 className="mt-4 text-4xl font-black tracking-[-.045em] md:text-5xl">Quatro passos. Um ano inteiro organizado.</h2>
+                <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#175cd3]">Como funciona</p>
+                <h2 className="mt-4 text-3xl font-medium tracking-[-.025em] md:text-4xl">Quatro passos. Um ano inteiro organizado.</h2>
               </div>
               <div className="border-t border-slate-200">
                 {steps.map((step) => (
                   <article key={step.n} className="grid gap-3 border-b border-slate-200 py-7 sm:grid-cols-[64px_190px_1fr] sm:items-center">
-                    <span className="font-mono text-sm font-bold text-blue-600">0{step.n}</span>
-                    <h3 className="text-lg font-black">{step.title}</h3>
+                    <span className="font-mono text-sm font-medium text-blue-600">0{step.n}</span>
+                    <h3 className="text-lg font-semibold">{step.title}</h3>
                     <p className="text-sm leading-6 text-slate-600">{step.desc}</p>
                   </article>
                 ))}
@@ -361,9 +361,9 @@ export default function LandingPage() {
             <div className="grid lg:grid-cols-[1fr_.9fr]">
               <div className="p-8 sm:p-12 lg:p-16">
                 <Calculator className="h-9 w-9 text-[#175cd3]" />
-                <h2 className="mt-8 max-w-xl text-4xl font-black tracking-[-.045em] md:text-5xl">Informação pronta quando você precisar.</h2>
+                <h2 className="mt-8 max-w-xl text-3xl font-medium tracking-[-.025em] md:text-4xl">Informação pronta quando você precisar.</h2>
                 <p className="mt-6 max-w-lg leading-7 text-slate-600">Centralize notas, identifique despesas dedutíveis e compartilhe relatórios claros com seu contador.</p>
-                <Button onClick={handleLogin} size="lg" className="mt-9 h-14 rounded-full bg-[#10213b] px-7 font-black hover:bg-[#1d3150]">Organizar minhas notas<ArrowRight className="h-5 w-5" /></Button>
+                <Button onClick={handleLogin} size="lg" className="mt-9 h-14 rounded-full bg-[#10213b] px-7 font-semibold hover:bg-[#1d3150]">Organizar minhas notas<ArrowRight className="h-5 w-5" /></Button>
               </div>
               <div className="grid gap-px bg-[#10213b]/10 sm:grid-cols-2 lg:grid-cols-1">
                 {[
@@ -371,7 +371,7 @@ export default function LandingPage() {
                   ['Acesso seguro', 'Seus documentos disponíveis em diferentes dispositivos.'],
                   ['Histórico centralizado', 'Menos tempo procurando comprovantes ao longo do ano.'],
                 ].map(([title, description]) => (
-                  <div key={title} className="bg-[#cfe3fb] p-8 lg:p-10"><CheckCircle className="h-5 w-5 text-emerald-700" /><h3 className="mt-5 text-lg font-black">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{description}</p></div>
+                  <div key={title} className="bg-[#cfe3fb] p-8 lg:p-10"><CheckCircle className="h-5 w-5 text-emerald-700" /><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{description}</p></div>
                 ))}
               </div>
             </div>
@@ -380,15 +380,15 @@ export default function LandingPage() {
 
         <section className="bg-[#175cd3] px-5 py-20 text-white lg:px-8">
           <div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 md:flex-row md:items-center">
-            <div><p className="text-xs font-black uppercase tracking-[.2em] text-blue-200">Comece agora</p><h2 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">Suas notas em ordem. Seu IR também.</h2></div>
-            <Button onClick={handleLogin} size="lg" className="h-14 shrink-0 rounded-full bg-white px-7 font-black text-[#10213b] hover:bg-blue-50">Criar conta gratuita<ArrowRight className="h-5 w-5" /></Button>
+            <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">Comece agora</p><h2 className="mt-3 text-3xl font-medium tracking-[-.02em] md:text-4xl">Suas notas em ordem. Seu IR também.</h2></div>
+            <Button onClick={handleLogin} size="lg" className="h-14 shrink-0 rounded-full bg-white px-7 font-semibold text-[#10213b] hover:bg-blue-50">Criar conta gratuita<ArrowRight className="h-5 w-5" /></Button>
           </div>
         </section>
       </main>
 
       <footer className="bg-[#0b1628] px-5 py-12 text-slate-400 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-9 md:flex-row md:items-end">
-          <div><div className="flex items-center gap-3"><img src={appLogo} alt="" className="h-9 w-9 rounded-xl" /><span className="text-lg font-black text-white">Restitua</span></div><p className="mt-4 text-sm">Restitua Soluções Ltda. · CNPJ 53.176.637/0001-08</p></div>
+          <div><div className="flex items-center gap-3"><img src={appLogo} alt="" className="h-9 w-9 rounded-xl" /><span className="text-lg font-semibold text-white">Restitua</span></div><p className="mt-4 text-sm">Restitua Soluções Ltda. · CNPJ 53.176.637/0001-08</p></div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold"><Link to="/terms" className="hover:text-white">Termos de Uso</Link><Link to="/privacy" className="hover:text-white">Privacidade</Link><Link to="/support" className="hover:text-white">Suporte</Link><Link to="/premium" className="hover:text-white">Planos</Link></div>
           <p className="text-xs">© {new Date().getFullYear()} Restitua</p>
         </div>
