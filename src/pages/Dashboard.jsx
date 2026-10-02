@@ -48,7 +48,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { appLogo } from '@/brandAssets';
 import { CATEGORY_INFO_CONTENT } from '@/constants/category-info-content';
 import { getVisibleYearOptions } from '@/utils/yearOptions';
-import { hasPremiumAccess, isFreeYearLocked } from '@/utils/subscriptionPlan';
+import { hasBasicAccess, hasPremiumAccess, isFreeYearLocked } from '@/utils/subscriptionPlan';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', cor: 'bg-red-500', icon: Heart, iconColor: 'text-red-600 dark:text-red-300' },
@@ -110,6 +110,7 @@ export default function Dashboard() {
   }, [anoFiltro, visibleYearOptions]);
 
   const isPremium = hasPremiumAccess(currentUser);
+  const isBasicOrPremium = hasBasicAccess(currentUser);
   const lockedYearMessage = 'Ano bloqueado no plano Free. Assine Basic ou Premium para acessar este histórico.';
 
   const notasFiltradas = notas.filter((nota) => {
@@ -409,6 +410,29 @@ export default function Dashboard() {
                 </span>
               </Button>
             </Link>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  {isBasicOrPremium ? (
+                    <Link to={createPageUrl('AntecipacaoRestituicao')} className="block w-full">
+                      <Button variant="outline" className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800">
+                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600/70 dark:text-sky-300/70"><Crown className="h-2 w-2" /> Basic</span>
+                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Landmark className="h-4 w-4" /></span>
+                        <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Solicite análise e acompanhe sua proposta.</span></span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70">
+                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600/70"><Crown className="h-2 w-2" /> Basic</span>
+                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Landmark className="h-4 w-4" /></span>
+                      <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Solicite análise e acompanhe sua proposta.</span></span>
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {!isBasicOrPremium ? <TooltipContent>Disponível para assinantes Basic e Premium.</TooltipContent> : null}
+            </Tooltip>
           </TooltipProvider>
         </div>
 

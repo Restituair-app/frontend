@@ -18,6 +18,7 @@ const AuditoriaTrimestral = lazy(() => import('./pages/AuditoriaTrimestral'));
 const SuportePremium = lazy(() => import('./pages/SuportePremium'));
 const Cashback = lazy(() => import('./pages/Cashback'));
 const PremiosCashback = lazy(() => import('./pages/PremiosCashback'));
+const AntecipacaoRestituicao = lazy(() => import('./pages/AntecipacaoRestituicao'));
 
 export const PAGES = {
     "Dashboard":     Dashboard,
@@ -29,6 +30,7 @@ export const PAGES = {
     "SuportePremium": SuportePremium,
     "Cashback": Cashback,
     "PremiosCashback": PremiosCashback,
+    "AntecipacaoRestituicao": AntecipacaoRestituicao,
 };
 
 export const pagesConfig = {

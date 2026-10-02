@@ -435,6 +435,22 @@ const cashback = {
   },
 };
 
+const refundAdvance = {
+  listModels() { return request('/refund-advance/models'); },
+  listRequests() { return request('/refund-advance/requests'); },
+  createRequest(payload) { return request('/refund-advance/requests', { method: 'POST', body: payload }); },
+  acceptProposal(id) { return request(`/refund-advance/requests/${id}/accept-proposal`, { method: 'POST' }); },
+  createCardSetup(id) { return request(`/refund-advance/requests/${id}/card-setup`, { method: 'POST' }); },
+  uploadDocument(id, { type, label, file }) {
+    const form = new FormData();
+    form.append('type', type);
+    form.append('label', label);
+    form.append('file', file);
+    return request(`/refund-advance/requests/${id}/documents`, { method: 'POST', body: form });
+  },
+  deleteDocument(id, documentId) { return request(`/refund-advance/requests/${id}/documents/${documentId}`, { method: 'DELETE' }); },
+};
+
 const integrations = {
   Core: {
     async UploadFile({ file }) {
@@ -480,5 +496,6 @@ export const base44 = {
   supportTickets,
   billing,
   cashback,
+  refundAdvance,
   appLogs,
 };
