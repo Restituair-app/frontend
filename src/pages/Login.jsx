@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { appLogo } from '@/brandAssets';
-import { LogIn, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
 
 const getDefaultRedirect = () => '/dashboard';
 
@@ -25,6 +25,8 @@ export default function LoginPage() {
   const [mode, setMode] = useState('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
   const redirectTo = useMemo(() => parseRedirectUrl(), []);
 
   const [form, setForm] = useState({
@@ -140,29 +142,23 @@ export default function LoginPage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="********"
-                required
-              />
+              <div className="relative">
+                <Input id="password" name="password" type={passwordVisible ? 'text' : 'password'} value={form.password} onChange={handleChange} placeholder="********" required className="pr-11" />
+                <button type="button" aria-label={passwordVisible ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setPasswordVisible((value) => !value)} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground">
+                  {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             {mode === 'register' && (
               <div className="space-y-1.5">
                 <Label htmlFor="passwordConfirm">Confirmar senha</Label>
-                <Input
-                  id="passwordConfirm"
-                  name="passwordConfirm"
-                  type="password"
-                  value={form.passwordConfirm}
-                  onChange={handleChange}
-                  placeholder="********"
-                  required
-                />
+                <div className="relative">
+                  <Input id="passwordConfirm" name="passwordConfirm" type={passwordConfirmVisible ? 'text' : 'password'} value={form.passwordConfirm} onChange={handleChange} placeholder="********" required className="pr-11" />
+                  <button type="button" aria-label={passwordConfirmVisible ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'} onClick={() => setPasswordConfirmVisible((value) => !value)} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground">
+                    {passwordConfirmVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             )}
 

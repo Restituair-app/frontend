@@ -237,8 +237,6 @@ export default function LandingPage() {
                 </Button>
               </div>
               <div className="mt-9 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-slate-600">
-                <span className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-600" />Conta gratuita</span>
-                <span className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-600" />Sem cartão</span>
                 <span className="flex items-center gap-2"><LockKeyhole className="h-4 w-4 text-emerald-600" />Dados protegidos</span>
               </div>
             </div>

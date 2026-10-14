@@ -439,6 +439,7 @@ const refundAdvance = {
   listModels() { return request('/refund-advance/models'); },
   listRequests() { return request('/refund-advance/requests'); },
   createRequest(payload) { return request('/refund-advance/requests', { method: 'POST', body: payload }); },
+  saveRegistration(id, payload) { return request(`/refund-advance/requests/${id}/registration-form`, { method: 'PATCH', body: payload }); },
   acceptProposal(id) { return request(`/refund-advance/requests/${id}/accept-proposal`, { method: 'POST' }); },
   createCardSetup(id) { return request(`/refund-advance/requests/${id}/card-setup`, { method: 'POST' }); },
   uploadDocument(id, { type, label, file }) {

@@ -7,7 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { hasPremiumAccess } from '@/utils/subscriptionPlan';
+import { hasBasicAccess } from '@/utils/subscriptionPlan';
 
 const formatBytes = (value) => {
   if (!Number.isFinite(value) || value <= 0) return '0 KB';
@@ -22,16 +22,16 @@ export default function ModelosJuridicos() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
-  const isPremium = hasPremiumAccess(currentUser);
+  const hasAccess = hasBasicAccess(currentUser);
 
   const modelosQuery = useQuery({
     queryKey: ['legal-models'],
     queryFn: () => base44.legalModels.list(),
-    enabled: Boolean(currentUser) && isPremium,
+    enabled: Boolean(currentUser) && hasAccess,
     retry: false,
   });
 
-  if (currentUser && !isPremium) {
+  if (currentUser && !hasAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 p-4 md:p-8">
         <div className="max-w-3xl mx-auto pt-6">
@@ -40,15 +40,15 @@ export default function ModelosJuridicos() {
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-300/15 dark:text-amber-200">
                 <Lock className="h-7 w-7" />
               </div>
-              <CardTitle className="text-xl text-slate-950 dark:text-slate-50">Modelo de Requerimentos é Premium</CardTitle>
+              <CardTitle className="text-xl text-slate-950 dark:text-slate-50">Disponível nos planos Basic e Premium</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <p className="text-sm leading-6 text-muted-foreground">
-                Assinantes Premium acessam Modelo de Requerimentos, visualizam os arquivos e podem baixar os documentos direto pelo Restitua.
+                Assine o plano Basic ou Premium para visualizar e baixar os documentos.
               </p>
               <Link to="/premium">
                 <Button className="bg-gradient-to-r from-slate-900 to-blue-900 text-white hover:opacity-95">
-                  <Crown className="mr-2 h-4 w-4" /> Ver plano Premium
+                  <Crown className="mr-2 h-4 w-4" /> Ver planos
                 </Button>
               </Link>
             </CardContent>
@@ -62,7 +62,7 @@ export default function ModelosJuridicos() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 p-4 md:p-8">
       <div className="max-w-5xl mx-auto pt-6">
         <div className="mb-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">Premium</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">Basic e Premium</p>
           <h1 className="mt-2 text-2xl font-bold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Arquivos de apoio para organizar solicitações, documentos e rotinas relacionadas às suas despesas.

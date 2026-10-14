@@ -12,7 +12,6 @@ import {
   FileText,
   FileSearch,
   MessageCircle,
-  Wallet,
   LogOut,
   XCircle,
   RefreshCw,
@@ -301,54 +300,6 @@ export default function Dashboard() {
               <TooltipTrigger asChild>
                 <div className="w-full">
                   {isPremium ? (
-                    <Link to={createPageUrl('ModelosJuridicos')} className="block w-full">
-                      <Button
-                        variant="outline"
-                        className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
-                      >
-                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
-                          <Crown className="h-2 w-2" /> Premium
-                        </span>
-                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
-                          <FileText className="h-4 w-4" />
-                        </span>
-                        <span className="flex min-w-0 flex-col gap-0.5">
-                          <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</span>
-                          <span className="text-xs font-normal text-muted-foreground">Documentos jurídicos de apoio.</span>
-                        </span>
-                      </Button>
-                    </Link>
-                  ) : (
-                    <div
-                      role="button"
-                      aria-disabled="true"
-                      className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70"
-                    >
-                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
-                        <Crown className="h-2 w-2" /> Premium
-                      </span>
-                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
-                        <FileText className="h-4 w-4" />
-                      </span>
-                      <span className="flex min-w-0 flex-col gap-0.5">
-                        <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</span>
-                        <span className="text-xs font-normal text-muted-foreground">Documentos jurídicos de apoio.</span>
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </TooltipTrigger>
-              {!isPremium ? (
-                <TooltipContent>
-                  Funcionalidade Premium. Assine um plano no site do Restitua para acessar.
-                </TooltipContent>
-              ) : null}
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="w-full">
-                  {isPremium ? (
                     <Link to={createPageUrl('AuditoriaTrimestral')} className="block w-full">
                       <Button
                         variant="outline"
@@ -362,7 +313,7 @@ export default function Dashboard() {
                         </span>
                         <span className="flex min-w-0 flex-col gap-0.5">
                           <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Auditoria Trimestral</span>
-                          <span className="text-xs font-normal text-muted-foreground">Solicite análise das notas restituíveis</span>
+                          <span className="text-xs font-normal text-muted-foreground">Solicite análise das notas restituíveis.</span>
                         </span>
                       </Button>
                     </Link>
@@ -380,7 +331,7 @@ export default function Dashboard() {
                       </span>
                       <span className="flex min-w-0 flex-col gap-0.5">
                         <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Auditoria Trimestral</span>
-                        <span className="text-xs font-normal text-muted-foreground">Solicite análise das notas restituíveis</span>
+                        <span className="text-xs font-normal text-muted-foreground">Solicite análise das notas restituíveis.</span>
                       </span>
                     </div>
                   )}
@@ -388,28 +339,58 @@ export default function Dashboard() {
               </TooltipTrigger>
               {!isPremium ? (
                 <TooltipContent>
-                  Funcionalidade Premium. Assine um plano no site do Restitua para acessar.
+                  Funcionalidade Premium. Assine o plano Premium para acessar.
                 </TooltipContent>
               ) : null}
             </Tooltip>
 
-            <Link to={createPageUrl('Cashback')} className="block w-full">
-              <Button
-                variant="outline"
-                className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
-              >
-                <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600/70 dark:text-sky-300/70">
-                  <Crown className="h-2 w-2" /> Basic
-                </span>
-                <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
-                  <Wallet className="h-4 w-4" />
-                </span>
-                <span className="flex min-w-0 flex-col gap-0.5">
-                  <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Programa Cashback</span>
-                  <span className="text-xs font-normal text-muted-foreground">Sua nota restituível vale dinheiro</span>
-                </span>
-              </Button>
-            </Link>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  {isBasicOrPremium ? (
+                    <Link to={createPageUrl('ModelosJuridicos')} className="block w-full">
+                      <Button
+                        variant="outline"
+                        className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
+                      >
+                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                          <Crown className="h-2 w-2" /> Basic
+                        </span>
+                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
+                          <FileText className="h-4 w-4" />
+                        </span>
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                          <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</span>
+                          <span className="text-xs font-normal text-muted-foreground">Documentos jurídicos de apoio.</span>
+                        </span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div
+                      role="button"
+                      aria-disabled="true"
+                      className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70"
+                    >
+                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                        <Crown className="h-2 w-2" /> Basic
+                      </span>
+                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
+                        <FileText className="h-4 w-4" />
+                      </span>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Modelo de Requerimentos</span>
+                        <span className="text-xs font-normal text-muted-foreground">Documentos jurídicos de apoio.</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {!isBasicOrPremium ? (
+                <TooltipContent>
+                  Disponível para assinantes Basic e Premium.
+                </TooltipContent>
+              ) : null}
+            </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -419,19 +400,19 @@ export default function Dashboard() {
                       <Button variant="outline" className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800">
                         <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600/70 dark:text-sky-300/70"><Crown className="h-2 w-2" /> Basic</span>
                         <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Landmark className="h-4 w-4" /></span>
-                        <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Solicite análise e acompanhe sua proposta.</span></span>
+                        <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Mediante análise e aprovação.</span></span>
                       </Button>
                     </Link>
                   ) : (
                     <div className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70">
                       <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600/70"><Crown className="h-2 w-2" /> Basic</span>
                       <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Landmark className="h-4 w-4" /></span>
-                      <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Solicite análise e acompanhe sua proposta.</span></span>
+                      <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Mediante análise e aprovação.</span></span>
                     </div>
                   )}
                 </div>
               </TooltipTrigger>
-              {!isBasicOrPremium ? <TooltipContent>Disponível para assinantes Basic e Premium.</TooltipContent> : null}
+              {!isBasicOrPremium ? <TooltipContent>Disponível para assinantes Basic e Premium, mediante envio da documentação solicitada, recebimento de restituição na última declaração de IR e apresentação de fiador ou seguro-fiança.</TooltipContent> : null}
             </Tooltip>
           </TooltipProvider>
         </div>
