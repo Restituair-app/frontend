@@ -141,8 +141,8 @@ export default function Configuracoes() {
   const subscriptionTier = getSubscriptionTier(currentUser);
   const subscriptionLabel = getSubscriptionLabel(currentUser);
   const subscriptionDescription = {
-    [SUBSCRIPTION_TIERS.FREE]: 'PDF e relatórios sem limite; comprovantes dos últimos 12 meses.',
-    [SUBSCRIPTION_TIERS.BASIC]: 'CSV/Excel liberado e histórico de até 5 anos.',
+    [SUBSCRIPTION_TIERS.FREE]: 'PDF, Excel, relatórios e download de notas liberados.',
+    [SUBSCRIPTION_TIERS.BASIC]: 'Relatórios liberados e histórico de até 5 anos.',
     [SUBSCRIPTION_TIERS.PREMIUM]: 'Histórico ilimitado e recursos Premium.',
   }[subscriptionTier];
   const subscriptionStyle = {

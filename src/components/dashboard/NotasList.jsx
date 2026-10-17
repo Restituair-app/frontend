@@ -16,7 +16,6 @@ import EditNotaModal from './EditNotaModal';
 import ResignedImage from '@/components/common/ResignedImage';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { getWarrantyStatus } from '@/utils/warranty';
-import { canDownloadIndividualNota, hasBasicAccess } from '@/utils/subscriptionPlan';
 
 const isPdfUrl = (url) => String(url || '').split('?')[0].toLowerCase().endsWith('.pdf');
 const MEMORY_PAGE_SIZE = 5;
@@ -363,7 +362,6 @@ function MemoryGallery({ notas, currentUser }) {
 }
 
 export default function NotasList({ notas, categorias, currentUser, showMemoryGallery = false }) {
-  const canDownloadNotasFiscais = hasBasicAccess(currentUser);
   const [notaSelecionada, setNotaSelecionada] = useState(null);
   const [notaEditando, setNotaEditando] = useState(null);
   const [mesesOcultos, setMesesOcultos] = useState({});
@@ -376,18 +374,13 @@ export default function NotasList({ notas, categorias, currentUser, showMemoryGa
       return;
     }
 
-    if (!hasBasicAccess(currentUser)) {
-      toast.info('Baixar notas fiscais está disponível nos planos Basic e Premium.');
-      return;
-    }
-
     try {
       await downloadFromUrl(nota.imagem_url, getNotaFileName(nota));
       toast.success('Nota baixada com sucesso.');
     } catch {
       toast.error('Não foi possível baixar esta nota. Tente novamente.');
     }
-  }, [currentUser]);
+  }, []);
 
   // Group by month
   const notasPorMes = useMemo(() => {
@@ -477,16 +470,14 @@ export default function NotasList({ notas, categorias, currentUser, showMemoryGa
                     alt="Nota fiscal"
                     className="w-full rounded-lg shadow-md"
                   />
-                  {canDownloadNotasFiscais ? (
-                    <Button
-                      variant="outline"
-                      className="mt-3 w-full gap-2"
-                      onClick={() => handleDownloadNota(notaSelecionada)}
-                    >
-                      <Download className="h-4 w-4" />
-                      Baixar esta nota
-                    </Button>
-                  ) : null}
+                  <Button
+                    variant="outline"
+                    className="mt-3 w-full gap-2"
+                    onClick={() => handleDownloadNota(notaSelecionada)}
+                  >
+                    <Download className="h-4 w-4" />
+                    Baixar esta nota
+                  </Button>
                 </div>
               )}
               {notaSelecionada.memoria_url && (

@@ -34,6 +34,8 @@ import {
   Package,
   CheckCircle,
   Crown,
+  DollarSign,
+  Repeat2,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -305,7 +307,7 @@ export default function Dashboard() {
                         variant="outline"
                         className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
                       >
-                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-blue-600/70 dark:text-blue-300/75">
                           <Crown className="h-2 w-2" /> Premium
                         </span>
                         <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
@@ -353,7 +355,7 @@ export default function Dashboard() {
                         variant="outline"
                         className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"
                       >
-                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                        <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-blue-600/70 dark:text-blue-300/75">
                           <Crown className="h-2 w-2" /> Basic
                         </span>
                         <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
@@ -371,7 +373,7 @@ export default function Dashboard() {
                       aria-disabled="true"
                       className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70"
                     >
-                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-amber-500/65 dark:text-amber-300/65">
+                      <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-blue-600/70 dark:text-blue-300/75">
                         <Crown className="h-2 w-2" /> Basic
                       </span>
                       <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white shadow-sm">
@@ -399,29 +401,44 @@ export default function Dashboard() {
                     <Link to={createPageUrl('AntecipacaoRestituicao')} className="block w-full">
                       <Button variant="outline" className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800">
                         <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600/70 dark:text-sky-300/70"><Crown className="h-2 w-2" /> Basic</span>
-                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Landmark className="h-4 w-4" /></span>
-                        <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Mediante análise e aprovação.</span></span>
+                        <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><DollarSign className="h-4 w-4" /></span>
+                        <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipe sua Restituição</span><span className="text-xs font-normal text-muted-foreground">Mediante análise e aprovação.</span></span>
                       </Button>
                     </Link>
                   ) : (
                     <div className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70">
                       <span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600/70"><Crown className="h-2 w-2" /> Basic</span>
-                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Landmark className="h-4 w-4" /></span>
-                      <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipação da Restituição</span><span className="text-xs font-normal text-muted-foreground">Mediante análise e aprovação.</span></span>
+                      <span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><DollarSign className="h-4 w-4" /></span>
+                      <span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Antecipe sua Restituição</span><span className="text-xs font-normal text-muted-foreground">Mediante análise e aprovação.</span></span>
                     </div>
                   )}
                 </div>
               </TooltipTrigger>
               {!isBasicOrPremium ? <TooltipContent>Disponível para assinantes Basic e Premium, mediante envio da documentação solicitada, recebimento de restituição na última declaração de IR e apresentação de fiador ou seguro-fiança.</TooltipContent> : null}
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  {isBasicOrPremium ? <Link to={createPageUrl('Cashback')} className="block w-full"><Button variant="outline" className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"><span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-blue-600/70 dark:text-blue-300/75"><Crown className="h-2 w-2" /> Basic</span><span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Repeat2 className="h-4 w-4" /></span><span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Programa Cashback</span><span className="text-xs font-normal text-muted-foreground">Sua nota restituível vale dinheiro.</span></span></Button></Link> : <div className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70"><span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-blue-600/70 dark:text-blue-300/75"><Crown className="h-2 w-2" /> Basic</span><span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Repeat2 className="h-4 w-4" /></span><span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Programa Cashback</span><span className="text-xs font-normal text-muted-foreground">Sua nota restituível vale dinheiro.</span></span></div>}
+                </div>
+              </TooltipTrigger>
+              {!isBasicOrPremium ? <TooltipContent>Disponível para assinantes Basic e Premium.</TooltipContent> : null}
+            </Tooltip>
           </TooltipProvider>
         </div>
 
         {/* Grid de Categorias */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">
-            Por Categoria
-          </h2>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-foreground">Por Categoria</h2>
+            <button
+              type="button"
+              onClick={() => setCategoriaSelecionada(null)}
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${!categoriaSelecionada ? 'border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300' : 'border-border bg-background text-muted-foreground hover:bg-muted'}`}
+            >
+              Todas
+            </button>
+          </div>
 
           {/* Dedutíveis */}
           <div className="mb-6">

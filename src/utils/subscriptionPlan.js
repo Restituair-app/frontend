@@ -43,23 +43,7 @@ export function isFreeYearLocked(userOrIsPremium, year) {
 }
 
 export function canDownloadIndividualNota(userOrIsPremium, nota) {
-  if (hasBasicAccess(userOrIsPremium)) {
-    return true;
-  }
-
-  const createdAt = nota?.createdAt || nota?.created_date;
-  if (!createdAt) {
-    return false;
-  }
-
-  const createdDate = new Date(createdAt);
-  if (Number.isNaN(createdDate.getTime())) {
-    return false;
-  }
-
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - 12);
-  return createdDate >= startDate;
+  return Boolean(nota);
 }
 
 export function getSubscriptionLabel(userOrIsPremium) {

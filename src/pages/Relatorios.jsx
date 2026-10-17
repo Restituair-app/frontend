@@ -12,7 +12,7 @@ import { ArrowLeft, Download, FileText, FileDown, FolderDown, Loader2 } from 'lu
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { resignS3UrlOnClient } from '@/lib/s3SignedUrlClient';
 import { appLogo } from '@/brandAssets';
-import { hasBasicAccess, isFreeYearLocked } from '@/utils/subscriptionPlan';
+import { isFreeYearLocked } from '@/utils/subscriptionPlan';
 
 const categorias = {
   saude: { nome: 'Médico / Saúde', cor: '#ef4444' },
@@ -36,7 +36,6 @@ const categorias = {
 
 const CATEGORIAS_DEDUTIVEIS = ['saude', 'dentista', 'educacao', 'previdencia_privada', 'pensao_alimenticia', 'dependentes'];
 const DEFAULT_MIN_YEAR = 2022;
-const BASIC_EXPORT_MESSAGE = 'CSV/Excel está disponível nos planos Basic e Premium. No plano gratuito você pode exportar o relatório em PDF.';
 
 const getYearFromNota = (nota) => {
   const year = Number(String(nota?.data_emissao || '').slice(0, 4));
@@ -114,15 +113,6 @@ export default function Relatorios() {
     }
   }, [anoComprovantes, visibleYearOptions]);
 
-  const requireBasicExport = () => {
-    if (hasBasicAccess(currentUser)) {
-      return true;
-    }
-
-    toast.info(BASIC_EXPORT_MESSAGE);
-    return false;
-  };
-
   const notasAno = notas.filter((nota) =>
   new Date(nota.data_emissao).getFullYear() === anoSelecionado
   );
@@ -178,10 +168,6 @@ export default function Relatorios() {
   const getRestituivelLabel = (categoria) => (CATEGORIAS_DEDUTIVEIS.includes(categoria) ? 'Sim' : 'Não');
 
   const exportarCSV = () => {
-    if (!requireBasicExport()) {
-      return;
-    }
-
     const headers = ['Data', 'Estabelecimento', 'Categoria', 'Restituível', 'Valor', 'CNPJ', 'Número Nota'];
     const rows = notasAno.map((nota) => [
     nota.data_emissao,
@@ -300,10 +286,6 @@ export default function Relatorios() {
   };
 
   const exportarInformeRestituicao = () => {
-    if (!requireBasicExport()) {
-      return;
-    }
-
     const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
     const notasDedutiveis = notasAno
@@ -351,11 +333,6 @@ export default function Relatorios() {
   const [baixandoArquivos, setBaixandoArquivos] = useState(false);
 
   const abrirModalComprovantes = () => {
-    if (!hasBasicAccess(currentUser)) {
-      toast.info('Baixar notas fiscais está disponível nos planos Basic e Premium.');
-      return;
-    }
-
     setAnoComprovantes(anoSelecionado);
     setMesesComprovantes([new Date().getMonth()]);
     setComprovantesModalOpen(true);
@@ -376,11 +353,6 @@ export default function Relatorios() {
   };
 
   const downloadArquivosDedutiveis = async () => {
-    if (!hasBasicAccess(currentUser)) {
-      toast.info('Baixar notas fiscais está disponível nos planos Basic e Premium.');
-      return;
-    }
-
     const selectedYear = Number(anoComprovantes);
     const selectedMonths = mesesComprovantes.map(Number).filter((month) => month >= 0 && month <= 11);
 
