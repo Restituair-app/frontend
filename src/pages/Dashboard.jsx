@@ -35,7 +35,6 @@ import {
   CheckCircle,
   Crown,
   DollarSign,
-  Repeat2,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -415,14 +414,6 @@ export default function Dashboard() {
                 </div>
               </TooltipTrigger>
               {!isBasicOrPremium ? <TooltipContent>Disponível para assinantes Basic e Premium, mediante envio da documentação solicitada, recebimento de restituição na última declaração de IR e apresentação de fiador ou seguro-fiança.</TooltipContent> : null}
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="w-full">
-                  {isBasicOrPremium ? <Link to={createPageUrl('Cashback')} className="block w-full"><Button variant="outline" className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-400/20 dark:bg-slate-900/70 dark:hover:bg-slate-800"><span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-blue-600/70 dark:text-blue-300/75"><Crown className="h-2 w-2" /> Basic</span><span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Repeat2 className="h-4 w-4" /></span><span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Programa Cashback</span><span className="text-xs font-normal text-muted-foreground">Sua nota restituível vale dinheiro.</span></span></Button></Link> : <div className="relative flex h-auto w-full cursor-not-allowed items-center overflow-hidden rounded-2xl border border-blue-200 bg-white/80 p-3 pr-8 text-left shadow-sm dark:border-blue-400/20 dark:bg-slate-900/70"><span className="pointer-events-none absolute right-2 top-1.5 inline-flex items-center gap-0.5 text-[7px] font-bold uppercase tracking-wide text-blue-600/70 dark:text-blue-300/75"><Crown className="h-2 w-2" /> Basic</span><span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-blue-900 text-white"><Repeat2 className="h-4 w-4" /></span><span className="flex min-w-0 flex-col gap-0.5"><span className="text-sm font-semibold text-slate-950 dark:text-slate-50">Programa Cashback</span><span className="text-xs font-normal text-muted-foreground">Sua nota restituível vale dinheiro.</span></span></div>}
-                </div>
-              </TooltipTrigger>
-              {!isBasicOrPremium ? <TooltipContent>Disponível para assinantes Basic e Premium.</TooltipContent> : null}
             </Tooltip>
           </TooltipProvider>
         </div>

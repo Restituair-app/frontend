@@ -16,6 +16,13 @@ const formatBytes = (value) => {
   return `${Math.ceil(value / 1024)} KB`;
 };
 
+const OFFICE_EXTENSIONS = new Set(['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']);
+
+const getFileExtension = (modelo) => {
+  const source = modelo.fileName || modelo.fileUrl?.split('?')[0] || '';
+  return source.split('.').pop()?.toLowerCase() || '';
+};
+
 export default function ModelosJuridicos() {
   const [currentUser, setCurrentUser] = useState(null);
   const [previewModel, setPreviewModel] = useState(null);
@@ -41,6 +48,12 @@ export default function ModelosJuridicos() {
   const openPreview = async (modelo) => {
     setPreviewModel(modelo);
     setPreviewLoading(true);
+
+    if (OFFICE_EXTENSIONS.has(getFileExtension(modelo))) {
+      setPreviewUrl(`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(modelo.fileUrl)}`);
+      return;
+    }
+
     try {
       const response = await fetch(modelo.fileUrl);
       if (!response.ok) throw new Error('Arquivo indisponível para visualização.');
@@ -152,7 +165,7 @@ export default function ModelosJuridicos() {
           </DialogHeader>
           <div className="relative min-h-0 flex-1 bg-slate-100 dark:bg-slate-950">
             {previewLoading ? <div className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /> Carregando documento...</div> : null}
-            {previewUrl ? <iframe title={previewModel?.title || 'Documento'} src={previewUrl} className="h-full w-full border-0" /> : null}
+            {previewUrl ? <iframe title={previewModel?.title || 'Documento'} src={previewUrl} className="h-full w-full border-0" onLoad={() => setPreviewLoading(false)} /> : null}
           </div>
         </DialogContent>
       </Dialog>
